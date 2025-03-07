@@ -11,26 +11,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import Capstone.Aeroponics.models.RO.UserRO;
-import Capstone.Aeroponics.services.UserServices;
+import Capstone.Aeroponics.models.RO.PlantRO;
+import Capstone.Aeroponics.services.PlantService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/plant")
 @RequiredArgsConstructor
-public class UserController {
-
-    private final UserServices userServices;
+public class PlantController {
+    
+    private final PlantService plantServices;
 
     @GetMapping
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.retrieveSuccessMessage(userServices.USERS),
-                userServices.getall()
+                MessageUtils.retrieveSuccessMessage(plantServices.PLANTS),
+                plantServices.getall()
             )
         );
     }
@@ -40,40 +40,40 @@ public class UserController {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.retrieveSuccessMessage(userServices.USER),
-                userServices.getUserById(id)
+                MessageUtils.retrieveSuccessMessage(plantServices.PLANT),
+                plantServices.getPlantById(id)
             )
         );
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody UserRO userRO) {
-        userServices.save(userRO);
+    public ResponseEntity<?> save(@RequestBody PlantRO plantRO) {
+        plantServices.save(plantRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.saveSuccessMessage(userServices.USER)
+                MessageUtils.saveSuccessMessage(plantServices.PLANT)
             )
         );
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UserRO userRO) {
-        userServices.update(id, userRO);
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody PlantRO plantRO) {
+        plantServices.update(id, plantRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.saveSuccessMessage(userServices.USER)
+                MessageUtils.saveSuccessMessage(plantServices.PLANT)
             )
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        userServices.delete(id);
+        plantServices.delete(id);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.deleteSuccessMessage(userServices.USER)
+                MessageUtils.deleteSuccessMessage(plantServices.PLANT)
             )
         );
     }

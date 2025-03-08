@@ -77,4 +77,14 @@ public class UserController {
             )
         );
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody UserRO userRO){
+        try {
+            userServices.login(userRO);
+            return ResponseEntity.ok("User logged in successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
 }

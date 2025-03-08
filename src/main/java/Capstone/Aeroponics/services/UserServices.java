@@ -104,5 +104,24 @@ public class UserServices {
             throw new ServiceException(errorMessage, e);
         }
     }
-    
+
+    public void login(UserRO userRO) {
+        try {
+            User user = userRepository.findByEmail(userRO.email());
+
+            if (Objects.isNull(user)) {
+                throw new ResourceNotFoundException("User not found");
+            }
+
+            if (!user.getPassword().equals(userRO.password())) {
+                throw new ResourceNotFoundException("Password does not match");
+            }
+
+            log.info("User logged in successfully");
+        } catch (Exception e) {
+            String errorMessage = "Error while logging in user with email: " + userRO.email();
+            log.error(errorMessage);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
 }

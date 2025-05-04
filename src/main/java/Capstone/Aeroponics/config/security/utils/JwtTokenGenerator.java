@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Component;
 
-import Capstone.Aeroponics.models.enums.RoleType;
 import Capstone.Aeroponics.models.request.jwt.JwtRecord;
 
 import lombok.RequiredArgsConstructor;
@@ -45,15 +44,11 @@ public class JwtTokenGenerator {
         log.info("[JwtTokenGenerator.generateAccessToken]::invoked");
         log.debug("generating access token for: {}", authentication.getName());
 
-        String roles = this.getRolesOfUser(authentication);
-        String permissions = this.getPermissionsFromRoles(roles);
-
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(jwtRecord.issuer())
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plus(jwtRecord.expiryAt(), ChronoUnit.MINUTES))
                 .subject(authentication.getName())
-                .claim(SCOPE, permissions)
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims))
@@ -88,20 +83,5 @@ public class JwtTokenGenerator {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(SPACE_DELIMITER));
-    }
-
-    private String getPermissionsFromRoles(String roles) {
-
-        Set<String> permissions = new HashSet<>();
-
-        if (roles.contains(RoleType.ADMIN.name())) {
-            permissions.addAll(RoleType.ADMIN.getStringPermissions());
-        }
-
-        if (roles.contains(RoleType.BASIC.name())) {
-            permissions.addAll(RoleType.BASIC.getStringPermissions());
-        }
-
-        return String.join(SPACE_DELIMITER, permissions);
     }
 }

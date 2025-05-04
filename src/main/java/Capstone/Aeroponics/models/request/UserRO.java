@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import Capstone.Aeroponics.models.enums.RoleType;
 import Capstone.Aeroponics.models.entities.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -14,8 +13,7 @@ public record UserRO(
     int id,
     @NotBlank(message = "Name is mandatory") String name,
     @NotBlank(message = "Email is mandatory") @Email String email,
-    String password,
-    @NotNull(message = "Role is mandatory.") RoleType role
+    String password
 ) {
     public User toEntity(User user) {
         if (Objects.isNull(user)) {
@@ -28,7 +26,6 @@ public record UserRO(
             user.setPassword(passwordEncoder.encode(password));
         }
         
-        user.setRole(role.name());
         return user;
     }
 }

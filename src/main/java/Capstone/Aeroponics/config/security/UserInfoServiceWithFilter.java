@@ -1,6 +1,5 @@
 package Capstone.Aeroponics.config.security;
 
-import Capstone.Aeroponics.models.enums.RoleType;
 import Capstone.Aeroponics.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,6 @@ public class UserInfoServiceWithFilter implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository
                 .findByEmail(email)
-                .filter(e -> e.getRole().equals(RoleType.ADMIN))
                 .map(UserInfoDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         MessageFormat.format("user with email {0} does not exist", email)));

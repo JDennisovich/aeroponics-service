@@ -183,14 +183,7 @@ public class OAuthService {
 
         String username = user.getEmail();
         String password = user.getPassword();
-        String roles = user.getRole().toString();
 
-        String[] roleArray = roles.split(SPLIT_EXPR);
-        GrantedAuthority[] authorities = Arrays
-                .stream(roleArray)
-                .map(role -> (GrantedAuthority) role::trim)
-                .toArray(GrantedAuthority[]::new);
-
-        return new UsernamePasswordAuthenticationToken(username, password, Arrays.asList(authorities));
+        return new UsernamePasswordAuthenticationToken(username, password);
     }
 }

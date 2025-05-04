@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import Capstone.Aeroponics.models.entities.User;
-import Capstone.Aeroponics.models.enums.RoleType;
 import Capstone.Aeroponics.models.request.jwt.JwtRecord;
 import Capstone.Aeroponics.models.request.jwt.RSAKeyRecord;
 import Capstone.Aeroponics.repositories.UserRepository;
@@ -48,9 +47,8 @@ public class AeroponicsApplication {
             if (users.isEmpty()) {
                 User user = User.builder()
                         .name("Admin User")
-                        .email("admin@example.com")
-                        .password(passwordEncoder.encode("123456789"))
-                        .role(RoleType.ADMIN.name())
+                        .email("justin@example.com")
+                        .password(passwordEncoder.encode("1234"))
                         .build();
                 userRepository.save(user);
             }

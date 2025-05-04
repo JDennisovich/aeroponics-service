@@ -21,7 +21,7 @@ public class Plant {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -33,5 +33,5 @@ public class Plant {
     private int tds;
 
     @Column(name = "user_id", nullable = false)
-    private long user_id;
+    private int user_id;
 }

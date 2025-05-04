@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import Capstone.Aeroponics.models.RO.UserRO;
-import Capstone.Aeroponics.services.UserServices;
+import Capstone.Aeroponics.models.request.UserRO;
+import Capstone.Aeroponics.services.UserService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserServices userServices;
+    private final UserService userServices;
 
     @GetMapping
     public ResponseEntity<?> getAll() {
@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getByid(@PathVariable Long id) {
+    public ResponseEntity<?> getByid(@PathVariable int id) {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
@@ -57,7 +57,7 @@ public class UserController {
         );
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UserRO userRO) {
+    public ResponseEntity<?> update(@PathVariable int id, @RequestBody UserRO userRO) {
         userServices.update(id, userRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
@@ -68,7 +68,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable int id) {
         userServices.delete(id);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
@@ -78,13 +78,13 @@ public class UserController {
         );
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserRO userRO){
-        try {
-            userServices.login(userRO);
-            return ResponseEntity.ok("User logged in successfully");
-        } catch (Exception e) {
-            return ResponseEntity.status(401).body(e.getMessage());
-        }
-    }
+    // @PostMapping("/login")
+    // public ResponseEntity<String> login(@RequestBody UserRO userRO){
+    //     try {
+    //         userServices.login(userRO);
+    //         return ResponseEntity.ok("User logged in successfully");
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(401).body(e.getMessage());
+    //     }
+    // }
 }

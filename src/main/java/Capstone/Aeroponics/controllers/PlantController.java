@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import Capstone.Aeroponics.models.RO.PlantRO;
+import Capstone.Aeroponics.models.request.PlantRO;
 import Capstone.Aeroponics.services.PlantService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
@@ -36,7 +36,7 @@ public class PlantController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getByid(@PathVariable Long id) {
+    public ResponseEntity<?> getByid(@PathVariable Integer id) {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
@@ -57,7 +57,7 @@ public class PlantController {
         );
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody PlantRO plantRO) {
+    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody PlantRO plantRO) {
         plantServices.update(id, plantRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
@@ -68,7 +68,7 @@ public class PlantController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Integer id) {
         plantServices.delete(id);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(

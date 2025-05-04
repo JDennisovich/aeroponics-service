@@ -1,15 +1,20 @@
 package Capstone.Aeroponics.services;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import Capstone.Aeroponics.config.security.UserInfoDetails;
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
-import Capstone.Aeroponics.models.RO.UserRO;
 import Capstone.Aeroponics.models.entities.User;
+import Capstone.Aeroponics.models.request.UserRO;
 import Capstone.Aeroponics.repositories.UserRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 
@@ -19,13 +24,15 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServices {
+public class UserService implements UserDetailsService{
 
     public static final String USERS = "Users";
 
     public static final String USER = "User";
 
     private final UserRepository userRepository;
+
+
 
     public List<User> getall() {
         try {
@@ -39,7 +46,7 @@ public class UserServices {
         }
     }
 
-    public Optional<User> getById(Long id) {
+    public Optional<User> getById(int id) {
         if (Objects.isNull(id)) {
             return Optional.empty();
         }
@@ -47,7 +54,7 @@ public class UserServices {
         return userRepository.findById(id);
     }
 
-    public User getUserById(Long id) {
+    public User getUserById(int id) {
         try {
             Optional<User> user = getById(id);
 
@@ -73,7 +80,7 @@ public class UserServices {
         }
     }
 
-    public void update(Long id, UserRO userRO) {
+    public void update(int id, UserRO userRO) {
         try {
             User user = getUserById(id);
 
@@ -89,7 +96,7 @@ public class UserServices {
         }
     }
 
-    public void delete(Long id) {
+    public void delete(int id) {
         try {
             User user = getUserById(id);
 
@@ -105,23 +112,39 @@ public class UserServices {
         }
     }
 
-    public void login(UserRO userRO) {
-        try {
-            User user = userRepository.findByEmail(userRO.email());
+    // public void login(UserRO userRO) {
+    //     try {
+    //         User user = userRepository.findByEmail(userRO.email());
 
-            if (Objects.isNull(user)) {
-                throw new ResourceNotFoundException("User not found");
-            }
+    //         if (Objects.isNull(user)) {
+    //             throw new ResourceNotFoundException("User not found");
+    //         }
 
-            if (!user.getPassword().equals(userRO.password())) {
-                throw new ResourceNotFoundException("Password does not match");
-            }
+    //         if (!user.getPassword().equals(userRO.password())) {
+    //             throw new ResourceNotFoundException("Password does not match");
+    //         }
 
-            log.info("User logged in successfully");
-        } catch (Exception e) {
-            String errorMessage = "Error while logging in user with email: " + userRO.email();
-            log.error(errorMessage);
-            throw new ServiceException(errorMessage, e);
-        }
+    //         log.info("User logged in successfully");
+    //     } catch (Exception e) {
+    //         String errorMessage = "Error while logging in user with email: " + userRO.email();
+    //         log.error(errorMessage);
+    //         throw new ServiceException(errorMessage, e);
+    //     }
+    // }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return userRepository
+            .findByEmail(username)
+            .map(UserInfoDetails::new)
+            .orElseThrow(() -> new UsernameNotFoundException(
+                MessageFormat.format("User with username {0} does not exist", username)));
+    }
+    public User loadUserInfoByUsername(String email) throws UsernameNotFoundException {
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        MessageFormat.format("user with username {0} does not exist", email)));
     }
 }
+

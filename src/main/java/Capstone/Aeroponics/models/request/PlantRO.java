@@ -1,4 +1,4 @@
-package Capstone.Aeroponics.models.RO;
+package Capstone.Aeroponics.models.request;
 
 import Capstone.Aeroponics.models.entities.Plant;
 import jakarta.validation.constraints.NotBlank;

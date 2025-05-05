@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
 import Capstone.Aeroponics.models.RO.PlantRO;
 import Capstone.Aeroponics.models.entities.Plant;
-import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.repositories.PlantRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;

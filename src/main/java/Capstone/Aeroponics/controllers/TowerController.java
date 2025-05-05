@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import Capstone.Aeroponics.models.RO.TowerRO;
+import Capstone.Aeroponics.models.request.TowerRO;
 import Capstone.Aeroponics.services.TowerService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;

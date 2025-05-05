@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import Capstone.Aeroponics.models.request.PlantRO;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 

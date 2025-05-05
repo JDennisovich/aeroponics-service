@@ -10,7 +10,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record UserRO( 
-    int id,
+    long id,
     @NotBlank(message = "Name is mandatory") String name,
     @NotBlank(message = "Email is mandatory") @Email String email,
     String password

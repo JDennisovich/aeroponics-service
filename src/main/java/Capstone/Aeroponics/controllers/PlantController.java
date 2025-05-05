@@ -36,7 +36,7 @@ public class PlantController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getByid(@PathVariable Integer id) {
+    public ResponseEntity<?> getByid(@PathVariable long id) {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
@@ -57,7 +57,7 @@ public class PlantController {
         );
     }
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody PlantRO plantRO) {
+    public ResponseEntity<?> update(@PathVariable long id, @RequestBody PlantRO plantRO) {
         plantServices.update(id, plantRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
@@ -68,7 +68,7 @@ public class PlantController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Integer id) {
+    public ResponseEntity<?> delete(@PathVariable long id) {
         plantServices.delete(id);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(

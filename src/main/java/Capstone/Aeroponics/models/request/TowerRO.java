@@ -1,14 +1,15 @@
-package Capstone.Aeroponics.models.RO;
+package Capstone.Aeroponics.models.request;
 
 import Capstone.Aeroponics.models.entities.Plant;
 import Capstone.Aeroponics.models.entities.Tower;
+import Capstone.Aeroponics.models.entities.User;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalTime;
 
 public record TowerRO(
     int id,
-    @NotNull(message = "User ID is mandatory") long user_id,
+    @NotNull(message = "User ID is mandatory") User user,
     @NotNull(message = "Plant is mandatory") Plant plant,
     @NotNull(message = "Time is mandatory") LocalTime time,
     @NotNull(message = "Frequency is mandatory") int frequency
@@ -17,7 +18,7 @@ public record TowerRO(
         if (tower == null) {
             tower = new Tower();
         }
-        tower.setUser_id(user_id);
+        tower.setUser(user);
         tower.setPlant(plant);
         tower.setTime(time);
         tower.setFrequency(frequency);

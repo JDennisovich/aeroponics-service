@@ -8,7 +8,7 @@ import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
-import Capstone.Aeroponics.models.RO.TowerRO;
+import Capstone.Aeroponics.models.request.TowerRO;
 import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.repositories.TowerRepository;
 import Capstone.Aeroponics.utils.MessageUtils;

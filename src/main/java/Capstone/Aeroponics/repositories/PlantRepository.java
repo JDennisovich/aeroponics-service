@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import Capstone.Aeroponics.models.entities.Plant;
 
 @Repository
-public interface PlantRepository extends JpaRepository<Plant, Integer> {
+public interface PlantRepository extends JpaRepository<Plant, Long> {
 
     
 } 

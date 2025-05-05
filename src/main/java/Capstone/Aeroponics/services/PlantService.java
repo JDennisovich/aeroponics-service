@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
 import Capstone.Aeroponics.models.entities.Plant;
-import Capstone.Aeroponics.models.entities.User;
-import Capstone.Aeroponics.models.request.PlantRO;
 import Capstone.Aeroponics.repositories.PlantRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +37,7 @@ public class PlantService {
         }
     }
     
-    public Optional<Plant> getById(int id) {
+    public Optional<Plant> getById(Long id) {
         if (Objects.isNull(id)) {
             return Optional.empty();
         }
@@ -47,7 +45,7 @@ public class PlantService {
         return plantRepository.findById(id);
     }
 
-    public Plant getPlantById(int id) {
+    public Plant getPlantById(Long id) {
         try {
             Optional<Plant> plant = getById(id);
 
@@ -73,7 +71,7 @@ public class PlantService {
         }
     }
 
-    public void update(int id, PlantRO plantRO) {
+    public void update(Long id, PlantRO plantRO) {
         try {
             Plant plant = getPlantById(id);
 
@@ -89,7 +87,7 @@ public class PlantService {
         }
     }
 
-    public void delete(int id) {
+    public void delete(Long id) {
         try {
             Plant plant = getPlantById(id);
 

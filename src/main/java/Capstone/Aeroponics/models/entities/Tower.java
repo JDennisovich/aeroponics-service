@@ -13,29 +13,31 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "plants")
-public class Plant {
-    
+@Table(name = "towers")
+public class Tower {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
-
-    @Column(name = "ph_level", nullable = false)
-    private int ph_level;
-
-    @Column(name = "ppm", nullable = false)
-    private int ppm;
-
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User user; 
 
+    @ManyToOne
+    @JoinColumn(name = "plant_id", nullable = false)
+    private Plant plant;
+
+    @Column(name = "time", nullable = false)
+    private LocalTime time;
+
+    @Column(name = "frequency", nullable = false)
+    private int frequency;
 }

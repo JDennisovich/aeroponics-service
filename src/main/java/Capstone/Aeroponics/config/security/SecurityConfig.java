@@ -66,6 +66,19 @@ public class SecurityConfig {
 
     private final JwtTokenUtils jwtTokenUtils;
 
+    @Order(0)
+    @Bean
+    public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .securityMatcher("/api/user")
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(this::handleAuthException))
+                .build();
+    }
+
+
     @Order(1)
     @Bean
     public SecurityFilterChain signInSecurityFilterChain(HttpSecurity http)

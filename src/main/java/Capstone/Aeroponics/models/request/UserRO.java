@@ -11,7 +11,8 @@ import jakarta.validation.constraints.NotNull;
 
 public record UserRO( 
     long id,
-    @NotBlank(message = "Name is mandatory") String name,
+    @NotBlank(message = "First name is mandatory") String first_name,
+    @NotBlank(message = "Last name is mandatory") String last_name,
     @NotBlank(message = "Email is mandatory") @Email String email,
     String password
 ) {
@@ -20,7 +21,8 @@ public record UserRO(
             user = new User();
         }
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        user.setName(name);
+        user.setFirst_name(first_name);
+        user.setLast_name(last_name);
         user.setEmail(email);
         if (password != null && !password.trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(password));

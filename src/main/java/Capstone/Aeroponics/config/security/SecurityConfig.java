@@ -74,14 +74,14 @@ public class SecurityConfig {
                 .securityMatcher("/api/user")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll() // ✅ Allow only POST
-                        .anyRequest().authenticated() // 🔐 Require auth for everything else
+                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this::handleAuthException))
                 .build();
     }
-
 
     @Order(1)
     @Bean

@@ -7,6 +7,5 @@ import Capstone.Aeroponics.models.entities.Plant;
 
 @Repository
 public interface PlantRepository extends JpaRepository<Plant, Long> {
-
     
 } 

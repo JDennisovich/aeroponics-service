@@ -13,8 +13,6 @@ public record TowerRO(
     @NotNull(message = "Plant is mandatory") Plant plant,
     @NotNull(message = "Time is mandatory") LocalTime time,
     @NotNull(message = "Water level is mandatory") int water_level,
-    @NotNull(message = "pH level is mandatory") int ph_level,
-    @NotNull(message = "PPM is mandatory") int ppm,
     @NotNull(message = "Frequency is mandatory") int frequency
 ) {
     public Tower toEntity(Tower tower) {
@@ -25,8 +23,6 @@ public record TowerRO(
         tower.setPlant(plant);
         tower.setTime(time);
         tower.setWaterLevel(water_level);
-        tower.setPh_level(ph_level);
-        tower.setPpm(ppm);
         tower.setFrequency(frequency);
 
         return tower;

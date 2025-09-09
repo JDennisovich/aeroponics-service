@@ -41,12 +41,6 @@ public class Tower {
     @Column(name = "water_level", nullable = false)
     private int waterLevel;
 
-    @Column(name = "ph_level", nullable = false)
-    private int ph_level;
-
-    @Column(name = "ppm", nullable = false)
-    private int ppm;
-
     @Column(name = "frequency", nullable = false)
     private int frequency;
 }

@@ -46,6 +46,28 @@ public class TowerController {
         );
     }
 
+    @GetMapping("/{id}/phLevel")
+    public ResponseEntity<?> getPhLevelById(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage("Ph Level"),
+                        towerService.getTowerPhLevels(id)
+                )
+        );
+    }
+
+    @GetMapping("/{id}/ppm")
+    public ResponseEntity<?> getPpmById(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage("PPM"),
+                        towerService.getTowerPpms(id)
+                )
+        );
+    }
+
     @PostMapping
     public ResponseEntity<?> save(@RequestBody TowerRO towerRO) {
         towerService.save(towerRO);

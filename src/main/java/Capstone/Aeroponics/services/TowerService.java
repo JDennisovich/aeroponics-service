@@ -3,7 +3,16 @@ package Capstone.Aeroponics.services;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import Capstone.Aeroponics.models.DTO.nutrient.NutrientDTO;
+import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
+import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
+import Capstone.Aeroponics.models.DTO.tower.TowerPhLevelDTO;
+import Capstone.Aeroponics.models.DTO.tower.TowerPpmDTO;
+import Capstone.Aeroponics.models.entities.Nutrient;
+import Capstone.Aeroponics.models.request.NutrientRO;
+import Capstone.Aeroponics.repositories.NutrientRepository;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 
@@ -20,9 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TowerService {
     public static final String TOWERS = "Towers";
+
     public static final String TOWER = "Tower";
 
     private final TowerRepository towerRepository;
+
+    private final NutrientRepository NutrientRepository;
 
     public List<Tower> getAll() {
         try {
@@ -56,6 +68,82 @@ public class TowerService {
         } catch (Exception e) {
             String errorMessage = "Error while getting " + TOWER;
             log.error(errorMessage);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public NutrientPhLevelDTO getTowerPhLevel(Long towerId) {
+        try {
+            Optional<Nutrient> nutrient = NutrientRepository
+                    .findTopByTowerIdOrderByTimeDesc(towerId);
+
+            if (nutrient.isEmpty()) {
+                throw new Exception("No nutrient data found for tower " + towerId);
+            }
+
+            return new NutrientPhLevelDTO(nutrient.get());
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting pH level for tower " + towerId;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public List<NutrientPhLevelDTO> getTowerPhLevels(Long towerId) {
+        try {
+            List<Nutrient> nutrients = NutrientRepository
+                    .findByTowerIdOrderByTimeDesc(towerId);
+
+            if (nutrients.isEmpty()) {
+                throw new Exception("No nutrient data found for tower " + towerId);
+            }
+
+            return nutrients.stream()
+                    .map(NutrientPhLevelDTO::new)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting pH levels for tower " + towerId;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public NutrientPpmDTO getTowerPpm(Long towerId) {
+        try {
+            Optional<Nutrient> nutrient = NutrientRepository
+                    .findTopByTowerIdOrderByTimeDesc(towerId);
+
+            if (nutrient.isEmpty()) {
+                throw new Exception("No nutrient data found for tower " + towerId);
+            }
+
+            return new NutrientPpmDTO(nutrient.get());
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting pH level for tower " + towerId;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public List<NutrientPhLevelDTO> getTowerPpms(Long towerId) {
+        try {
+            List<Nutrient> nutrients = NutrientRepository
+                    .findByTowerIdOrderByTimeDesc(towerId);
+
+            if (nutrients.isEmpty()) {
+                throw new Exception("No nutrient data found for tower " + towerId);
+            }
+
+            return nutrients.stream()
+                    .map(NutrientPhLevelDTO::new)
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting pH levels for tower " + towerId;
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }

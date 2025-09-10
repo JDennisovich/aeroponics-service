@@ -1,9 +1,8 @@
 package Capstone.Aeroponics.services;
 
 import java.text.MessageFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,6 +30,10 @@ public class UserService implements UserDetailsService{
     public static final String USER = "User";
 
     private final UserRepository userRepository;
+
+    private static final int MIN_LENGTH = 8;
+
+    private static final String SPECIAL_CHARS = "@$!%*?&";
 
 
 
@@ -72,13 +75,22 @@ public class UserService implements UserDetailsService{
 
     public void save(UserRO userRO) {
         try {
+            if (!userRO.password().equals(userRO.confirmPassword())) {
+                String errorMessage = "Passwords do not match";
+                log.error(errorMessage);
+                throw new ServiceException(errorMessage);
+            }
+
+            validatePassword(userRO.password());
+
             userRepository.save(userRO.toEntity(null));
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(USER);
-            log.error(errorMessage);
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }
+
 
     public void update(int id, UserRO userRO) {
         try {
@@ -146,5 +158,33 @@ public class UserService implements UserDetailsService{
                 .orElseThrow(() -> new UsernameNotFoundException(
                         MessageFormat.format("user with username {0} does not exist", email)));
     }
+
+    private void validatePassword(String password) {
+        List<String> errors = new ArrayList<>();
+
+        // Define validation rules
+        Map<Predicate<String>, String> rules = Map.of(
+                p -> p.length() >= MIN_LENGTH, "Password must be at least " + MIN_LENGTH + " characters long",
+                p -> p.matches(".*[A-Z].*"), "Password must contain at least one uppercase letter",
+                p -> p.matches(".*[a-z].*"), "Password must contain at least one lowercase letter",
+                p -> p.matches(".*\\d.*"), "Password must contain at least one number",
+                p -> p.matches(".*[" + SPECIAL_CHARS + "].*"), "Password must contain at least one special character (" + SPECIAL_CHARS + ")",
+                p -> !p.contains(" "), "Password must not contain spaces"
+        );
+
+        // Apply rules
+        rules.forEach((rule, message) -> {
+            if (!rule.test(password)) {
+                errors.add(message);
+            }
+        });
+
+        if (!errors.isEmpty()) {
+            String errorMessage = String.join("; ", errors);
+            log.error(errorMessage);
+            throw new ServiceException(errorMessage);
+        }
+    }
+
 }
 

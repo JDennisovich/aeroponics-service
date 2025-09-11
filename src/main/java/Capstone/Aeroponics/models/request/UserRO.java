@@ -2,6 +2,7 @@ package Capstone.Aeroponics.models.request;
 
 import java.util.Objects;
 
+import Capstone.Aeroponics.models.request.validations.PasswordFormatValidation;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import Capstone.Aeroponics.models.entities.User;
@@ -13,7 +14,7 @@ public record UserRO(
         @NotBlank(message = "First name is mandatory") String first_name,
         @NotBlank(message = "Last name is mandatory") String last_name,
         @NotBlank(message = "Email is mandatory") @Email String email,
-        @NotBlank(message = "Password is mandatory") String password,
+        @NotBlank(message = "Password is mandatory") @PasswordFormatValidation String password,
         @NotBlank(message = "Confirm Password is mandatory") String confirmPassword
 ) {
     public User toEntity(User user) {

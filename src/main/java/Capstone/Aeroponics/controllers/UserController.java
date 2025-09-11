@@ -1,5 +1,6 @@
 package Capstone.Aeroponics.controllers;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,7 +48,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody UserRO userRO) {
+    public ResponseEntity<?> save(@Valid @RequestBody UserRO userRO) {
         userServices.save(userRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(

@@ -81,8 +81,6 @@ public class UserService implements UserDetailsService{
                 throw new ServiceException(errorMessage);
             }
 
-            validatePassword(userRO.password());
-
             userRepository.save(userRO.toEntity(null));
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(USER);
@@ -157,33 +155,6 @@ public class UserService implements UserDetailsService{
                 .findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         MessageFormat.format("user with username {0} does not exist", email)));
-    }
-
-    private void validatePassword(String password) {
-        List<String> errors = new ArrayList<>();
-
-        // Define validation rules
-        Map<Predicate<String>, String> rules = Map.of(
-                p -> p.length() >= MIN_LENGTH, "Password must be at least " + MIN_LENGTH + " characters long",
-                p -> p.matches(".*[A-Z].*"), "Password must contain at least one uppercase letter",
-                p -> p.matches(".*[a-z].*"), "Password must contain at least one lowercase letter",
-                p -> p.matches(".*\\d.*"), "Password must contain at least one number",
-                p -> p.matches(".*[" + SPECIAL_CHARS + "].*"), "Password must contain at least one special character (" + SPECIAL_CHARS + ")",
-                p -> !p.contains(" "), "Password must not contain spaces"
-        );
-
-        // Apply rules
-        rules.forEach((rule, message) -> {
-            if (!rule.test(password)) {
-                errors.add(message);
-            }
-        });
-
-        if (!errors.isEmpty()) {
-            String errorMessage = String.join("; ", errors);
-            log.error(errorMessage);
-            throw new ServiceException(errorMessage);
-        }
     }
 
 }

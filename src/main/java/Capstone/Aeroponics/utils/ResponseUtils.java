@@ -32,4 +32,13 @@ public class ResponseUtils {
 
         return response;
     }
+
+    public static <T> ErrorResponse<T> buildErrorResponse(HttpStatus status, String message, T data) {
+        ErrorResponse<T> response = new ErrorResponse<>();
+        response.setStatusCode(status.value());
+        response.setMessage(message);
+        response.setData(data);
+
+        return response;
+    }
 }

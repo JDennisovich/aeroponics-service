@@ -23,12 +23,7 @@ public class GlobalExceptionHandler {
             errors.put(error.getField(), error.getDefaultMessage());
         }
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", false);
-        body.put("statusCode", HttpStatus.BAD_REQUEST.value());
-        body.put("errors", errors);
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", errors));
     }
 
     @ExceptionHandler(ServiceException.class)

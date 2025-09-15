@@ -4,8 +4,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.request.PlantRO;
+import Capstone.Aeroponics.repositories.UserRepository;
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
@@ -24,6 +28,8 @@ public class PlantService {
     public static final String PLANT = "Plant";
     
     private final PlantRepository plantRepository;
+
+    private final UserRepository userRepository;
 
     //Note: paayos ng Http response, naka success kahit empty dapat empty yung message response. Pa double check naden ng lahat
     public List<Plant> getall() {
@@ -62,15 +68,63 @@ public class PlantService {
         }
     }
 
-    public void save(PlantRO plantRO) {
+    public List<String> getAllPlantNames() {
         try {
-            plantRepository.save(plantRO.toEntity(null));
+            List<Plant> plants = plantRepository.findAll();
+            List<String> plantNames = plants.stream()
+                    .map(Plant::getName)
+                    .toList(); // Java 16+ (use .collect(Collectors.toList()) for older versions)
+
+            log.info("Plant names found: " + plantNames.size());
+            return plantNames;
         } catch (Exception e) {
-            String errorMessage = MessageUtils.saveErrorMessage(PLANT);
-            log.error(errorMessage);
+            String errorMessage = "Error while getting plant names";
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }
+
+
+    public void save(PlantRO plantRO) {
+        try {
+            // get the logged-in user's email (or username) from JWT
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            // fetch the actual User entity
+            User currentUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            // convert RO -> Entity with current user
+            Plant plant = plantRO.toEntity(null, currentUser);
+
+            plantRepository.save(plant);
+
+        } catch (Exception e) {
+            String errorMessage = MessageUtils.saveErrorMessage("PLANT");
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public void saveAll(List<PlantRO> plantROList) {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User currentUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            List<Plant> plants = plantROList.stream()
+                    .map(ro -> ro.toEntity(null, currentUser))
+                    .toList();
+
+            plantRepository.saveAll(plants);
+
+        } catch (Exception e) {
+            String errorMessage = MessageUtils.saveErrorMessage(PLANT);
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
 
     public void update(Long id, PlantRO plantRO) {
         try {
@@ -80,13 +134,21 @@ public class PlantService {
                 throw new ResourceNotFoundException("Plant not found");
             }
 
-            plantRepository.save(plantRO.toEntity(plant));
+            // get logged-in user from JWT
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            User currentUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+            // update plant with logged-in user
+            plantRepository.save(plantRO.toEntity(plant, currentUser));
+
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(PLANT);
-            log.error(errorMessage);
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }
+
 
     public void delete(Long id) {
         try {

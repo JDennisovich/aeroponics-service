@@ -8,10 +8,9 @@ public record PlantRO(
     int id,
     @NotBlank(message = "Name is mandatory") String name,
     @NotBlank(message = "ph_level is mandatory") int ph_level,
-    @NotBlank(message = "ppm is mandatory") int ppm, // Updated field name
-    @NotBlank(message = "user_id is mandatory") User user
+    @NotBlank(message = "ppm is mandatory") int ppm // Updated field name
 ) {
-    public Plant toEntity(Plant plant) {
+    public Plant toEntity(Plant plant,User user) {
         if (plant == null) {
             plant = new Plant();
         }

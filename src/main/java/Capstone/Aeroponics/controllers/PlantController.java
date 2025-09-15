@@ -17,6 +17,8 @@ import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/plant")
 @RequiredArgsConstructor
@@ -32,6 +34,17 @@ public class PlantController {
                 MessageUtils.retrieveSuccessMessage(plantServices.PLANTS),
                 plantServices.getall()
             )
+        );
+    }
+
+    @GetMapping("/names")
+    public ResponseEntity<?> getAllNames() {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage(plantServices.PLANTS),
+                        plantServices.getAllPlantNames()
+                )
         );
     }
 
@@ -55,6 +68,12 @@ public class PlantController {
                 MessageUtils.saveSuccessMessage(plantServices.PLANT)
             )
         );
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<?> savePlants(@RequestBody List<PlantRO> plantROList) {
+        plantServices.saveAll(plantROList);
+        return ResponseEntity.ok("Plants saved successfully");
     }
 
     @PutMapping("/{id}")

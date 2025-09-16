@@ -71,9 +71,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/user")
-                .securityMatcher("/api/plant")
-                .securityMatcher("/api/tower")
+                .securityMatcher("/api/user","/api/plant","/api/tower")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth

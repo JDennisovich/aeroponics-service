@@ -35,7 +35,7 @@ public class Tower {
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
 
-    @Column(name = "time", nullable = false)
+    @Column(name = "time", nullable =  false)
     private LocalTime time;
 
     @Column(name = "water_level", nullable = false)
@@ -43,4 +43,10 @@ public class Tower {
 
     @Column(name = "frequency", nullable = false)
     private int frequency;
+
+    @Column(name = "start_date", nullable = false)
+    private int start_date;
+
+    @Column(name = "end_date", nullable = false)
+    private int end_date;
 }

@@ -13,7 +13,9 @@ public record TowerRO(
     @NotNull(message = "Plant is mandatory") Plant plant,
     @NotNull(message = "Time is mandatory") LocalTime time,
     @NotNull(message = "Water level is mandatory") int water_level,
-    @NotNull(message = "Frequency is mandatory") int frequency
+    @NotNull(message = "Frequency is mandatory") int frequency,
+    @NotNull(message = "Start Date is mandatory") int start_date,
+    @NotNull(message = "End Date is mandatory") int end_date
 ) {
     public Tower toEntity(Tower tower) {
         if (tower == null) {
@@ -24,6 +26,8 @@ public record TowerRO(
         tower.setTime(time);
         tower.setWaterLevel(water_level);
         tower.setFrequency(frequency);
+        tower.setStart_date(start_date);
+        tower.setEnd_date(end_date);
 
         return tower;
     }

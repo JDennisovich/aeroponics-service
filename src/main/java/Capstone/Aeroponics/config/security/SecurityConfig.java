@@ -72,11 +72,15 @@ public class SecurityConfig {
     public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .securityMatcher("/api/user")
+                .securityMatcher("/api/plant")
+                .securityMatcher("/api/tower")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/plant").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/tower").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

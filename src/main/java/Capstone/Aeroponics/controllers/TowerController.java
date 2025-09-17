@@ -35,6 +35,17 @@ public class TowerController {
         );
     }
 
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getTowerByUserId(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage(towerService.TOWER),
+                        towerService.getTowersByUserId(id)
+                )
+        );
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id) {
         return ResponseEntity.ok(

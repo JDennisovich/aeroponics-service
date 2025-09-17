@@ -48,6 +48,18 @@ public class TowerService {
         }
     }
 
+    public List<Tower> getTowersByUserId(Long id) {
+        try {
+            List<Tower> towers = towerRepository.findByUserId(id);
+            log.info(TOWERS + " found for userId " + id + ": " + towers.size());
+            return towers;
+        } catch (Exception e) {
+            String errorMessage = "Error while getting " + TOWERS + " for userId " + id;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
     public Optional<Tower> getById(Long id) {
         if (Objects.isNull(id)) {
             return Optional.empty();

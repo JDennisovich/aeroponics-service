@@ -38,22 +38,22 @@ public class AeroponicsApplication {
      *
      * @return the command line runner
      */
-    @Bean
-    public CommandLineRunner startUp() {
-        return _ -> {
-
-            List<User> users = userRepository.findAll();
-
-            if (users.isEmpty()) {
-                User user = User.builder()
-                        .first_name("Admin")
-                        .last_name("user")
-                        .email("justin@example.com")
-                        .password(passwordEncoder.encode("1234"))
-                        .build();
-                userRepository.save(user);
-            }
-        };
-    }
+//    @Bean
+//    public CommandLineRunner startUp() {
+//        return _ -> {
+//
+//            List<User> users = userRepository.findAll();
+//
+//            if (users.isEmpty()) {
+//                User user = User.builder()
+//                        .first_name("Admin")
+//                        .last_name("user")
+//                        .email("justin@example.com")
+//                        .password(passwordEncoder.encode("1234"))
+//                        .build();
+//                userRepository.save(user);
+//            }
+//        };
+//    }
 
 }

@@ -5,6 +5,7 @@ import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.entities.User;
 import jakarta.validation.constraints.NotNull;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record TowerRO(
@@ -14,8 +15,8 @@ public record TowerRO(
     @NotNull(message = "Time is mandatory") LocalTime time,
     @NotNull(message = "Water level is mandatory") int water_level,
     @NotNull(message = "Frequency is mandatory") int frequency,
-    @NotNull(message = "Start Date is mandatory") int start_date,
-    @NotNull(message = "End Date is mandatory") int end_date
+    @NotNull(message = "Start Date is mandatory") LocalDate start_date,
+    @NotNull(message = "End Date is mandatory") LocalDate end_date
 ) {
     public Tower toEntity(Tower tower) {
         if (tower == null) {

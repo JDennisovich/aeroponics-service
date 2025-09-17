@@ -71,7 +71,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/user","/api/plant","/api/tower")
+                .securityMatcher("/api/user","/api/plant","/api/tower/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
@@ -79,6 +79,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/plant").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tower").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tower").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/tower/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tower/user/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Data
@@ -45,8 +46,8 @@ public class Tower {
     private int frequency;
 
     @Column(name = "start_date", nullable = false)
-    private int start_date;
+    private LocalDate start_date;
 
     @Column(name = "end_date", nullable = false)
-    private int end_date;
+    private LocalDate end_date;
 }

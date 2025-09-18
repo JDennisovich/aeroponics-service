@@ -2,6 +2,8 @@ package Capstone.Aeroponics.models.entities;
 
 import java.util.List;
 
+import Capstone.Aeroponics.models.DTO.ImageData;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
@@ -40,6 +42,10 @@ public class User {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    //TODO: Uncomment when image upload is implemented
+//    @Column(name = "images", nullable = false)
+//    private List<ImageData> images;
 
     @JsonIgnore
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

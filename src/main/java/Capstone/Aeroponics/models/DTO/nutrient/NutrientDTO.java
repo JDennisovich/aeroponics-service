@@ -1,7 +1,7 @@
 package Capstone.Aeroponics.models.DTO.nutrient;
 
 import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
-import Capstone.Aeroponics.models.entities.Nutrient;
+import Capstone.Aeroponics.models.entities.Nutrient_log;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,12 +25,12 @@ public class NutrientDTO {
     private int ph_level;
     private int ppm;
 
-    public NutrientDTO(Nutrient nutrient) {
-        this.id = nutrient.getId();
-        this.tower = new TowerDTO(nutrient.getTower());
-        this.time = nutrient.getTime();
-        this.ph_level = nutrient.getPh_level();
-        this.ppm = nutrient.getPpm();
+    public NutrientDTO(Nutrient_log nutrientLog) {
+        this.id = nutrientLog.getId();
+        this.tower = new TowerDTO(nutrientLog.getTower());
+        this.time = nutrientLog.getTime();
+        this.ph_level = nutrientLog.getPh_level();
+        this.ppm = nutrientLog.getPpm();
     }
 
     //TODO: ADD CONFIRM PASSWORD TO USER REGISTER

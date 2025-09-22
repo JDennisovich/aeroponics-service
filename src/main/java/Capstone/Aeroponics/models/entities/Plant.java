@@ -28,11 +28,17 @@ public class Plant {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "ph_level", nullable = false)
-    private int ph_level;
+    @Column(name = "min_ph_level", nullable = false)
+    private int min_ph_level;
 
-    @Column(name = "ppm", nullable = false)
-    private int ppm;
+    @Column(name = "max_ph_level", nullable = false)
+    private int max_ph_level;
+
+    @Column(name = "min_ppm", nullable = false)
+    private int min_ppm;
+
+    @Column(name = "max_ppm", nullable = false)
+    private int max_ppm;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

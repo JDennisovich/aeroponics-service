@@ -13,8 +13,8 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "nutrients")
-public class Nutrient {
+@Table(name = "nutrients_log")
+public class Nutrient_log {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,4 +32,7 @@ public class Nutrient {
 
     @Column (name = "ppm", nullable = false)
     private int ppm;
+
+    @Column (name = "water_level", nullable = false)
+    private int water_level;
 }

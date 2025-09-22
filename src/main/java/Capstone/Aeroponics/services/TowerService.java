@@ -5,14 +5,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import Capstone.Aeroponics.models.DTO.nutrient.NutrientDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
-import Capstone.Aeroponics.models.DTO.tower.TowerPhLevelDTO;
-import Capstone.Aeroponics.models.DTO.tower.TowerPpmDTO;
-import Capstone.Aeroponics.models.entities.Nutrient;
-import Capstone.Aeroponics.models.request.NutrientRO;
-import Capstone.Aeroponics.repositories.NutrientRepository;
+import Capstone.Aeroponics.models.entities.Nutrient_log;
+import Capstone.Aeroponics.repositories.Nutrient_logRepository;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +30,7 @@ public class TowerService {
 
     private final TowerRepository towerRepository;
 
-    private final NutrientRepository NutrientRepository;
+    private final Nutrient_logRepository Nutrient_logRepository;
 
     public List<Tower> getAll() {
         try {
@@ -86,7 +82,7 @@ public class TowerService {
 
     public NutrientPhLevelDTO getTowerPhLevel(Long towerId) {
         try {
-            Optional<Nutrient> nutrient = NutrientRepository
+            Optional<Nutrient_log> nutrient = Nutrient_logRepository
                     .findTopByTowerIdOrderByTimeDesc(towerId);
 
             if (nutrient.isEmpty()) {
@@ -104,14 +100,14 @@ public class TowerService {
 
     public List<NutrientPhLevelDTO> getTowerPhLevels(Long towerId) {
         try {
-            List<Nutrient> nutrients = NutrientRepository
+            List<Nutrient_log> nutrientLogs = Nutrient_logRepository
                     .findByTowerIdOrderByTimeDesc(towerId);
 
-            if (nutrients.isEmpty()) {
+            if (nutrientLogs.isEmpty()) {
                 throw new Exception("No nutrient data found for tower " + towerId);
             }
 
-            return nutrients.stream()
+            return nutrientLogs.stream()
                     .map(NutrientPhLevelDTO::new)
                     .collect(Collectors.toList());
 
@@ -124,7 +120,7 @@ public class TowerService {
 
     public NutrientPpmDTO getTowerPpm(Long towerId) {
         try {
-            Optional<Nutrient> nutrient = NutrientRepository
+            Optional<Nutrient_log> nutrient = Nutrient_logRepository
                     .findTopByTowerIdOrderByTimeDesc(towerId);
 
             if (nutrient.isEmpty()) {
@@ -142,14 +138,14 @@ public class TowerService {
 
     public List<NutrientPhLevelDTO> getTowerPpms(Long towerId) {
         try {
-            List<Nutrient> nutrients = NutrientRepository
+            List<Nutrient_log> nutrientLogs = Nutrient_logRepository
                     .findByTowerIdOrderByTimeDesc(towerId);
 
-            if (nutrients.isEmpty()) {
+            if (nutrientLogs.isEmpty()) {
                 throw new Exception("No nutrient data found for tower " + towerId);
             }
 
-            return nutrients.stream()
+            return nutrientLogs.stream()
                     .map(NutrientPhLevelDTO::new)
                     .collect(Collectors.toList());
 

@@ -1,7 +1,7 @@
 package Capstone.Aeroponics.controllers;
 
-import Capstone.Aeroponics.models.request.NutrientRO;
-import Capstone.Aeroponics.services.NutrientService;
+import Capstone.Aeroponics.models.request.Nutrient_logsRO;
+import Capstone.Aeroponics.services.Nutrient_logService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
 import lombok.RequiredArgsConstructor;
@@ -12,16 +12,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/nutrient")
 @RequiredArgsConstructor
-public class NutrientController {
+public class Nutrient_logController {
 
-    private final NutrientService nutrientService;
+    private final Nutrient_logService nutrientLogService;
 
     @GetMapping
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.retrieveSuccessMessage(nutrientService.NUTRIENTS),
-                nutrientService.getAll()
+                MessageUtils.retrieveSuccessMessage(nutrientLogService.NUTRIENTS),
+                nutrientLogService.getAll()
         ));
     }
 
@@ -30,41 +30,41 @@ public class NutrientController {
         return ResponseEntity.ok(
                 ResponseUtils.buildSuccessResponse(
                         HttpStatus.OK,
-                        MessageUtils.retrieveSuccessMessage(nutrientService.NUTRIENT),
-                        nutrientService.getNutrientById(id)
+                        MessageUtils.retrieveSuccessMessage(nutrientLogService.NUTRIENT),
+                        nutrientLogService.getNutrientById(id)
                 )
         );
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody NutrientRO nutrientRO) {
-        nutrientService.save(nutrientRO);
+    public ResponseEntity<?> save(@RequestBody Nutrient_logsRO nutrientLogsRO) {
+        nutrientLogService.save(nutrientLogsRO);
         return ResponseEntity.ok(
                 ResponseUtils.buildSuccessResponse(
                         HttpStatus.OK,
-                        MessageUtils.saveSuccessMessage(nutrientService.NUTRIENT)
+                        MessageUtils.saveSuccessMessage(nutrientLogService.NUTRIENT)
                 )
         );
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable long id, @RequestBody NutrientRO nutrientRO) {
-        nutrientService.update(id, nutrientRO);
+    public ResponseEntity<?> update(@PathVariable long id, @RequestBody Nutrient_logsRO nutrientLogsRO) {
+        nutrientLogService.update(id, nutrientLogsRO);
         return ResponseEntity.ok(
                 ResponseUtils.buildSuccessResponse(
                         HttpStatus.OK,
-                        MessageUtils.saveSuccessMessage(nutrientService.NUTRIENT)
+                        MessageUtils.saveSuccessMessage(nutrientLogService.NUTRIENT)
                 )
         );
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable long id) {
-        nutrientService.delete(id);
+        nutrientLogService.delete(id);
         return ResponseEntity.ok(
                 ResponseUtils.buildSuccessResponse(
                         HttpStatus.OK,
-                        MessageUtils.deleteSuccessMessage(nutrientService.NUTRIENT)
+                        MessageUtils.deleteSuccessMessage(nutrientLogService.NUTRIENT)
                 )
         );
     }

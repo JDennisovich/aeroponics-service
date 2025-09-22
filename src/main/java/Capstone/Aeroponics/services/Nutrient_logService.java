@@ -1,9 +1,9 @@
 package Capstone.Aeroponics.services;
 
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
-import Capstone.Aeroponics.models.entities.Nutrient;
-import Capstone.Aeroponics.models.request.NutrientRO;
-import Capstone.Aeroponics.repositories.NutrientRepository;
+import Capstone.Aeroponics.models.entities.Nutrient_log;
+import Capstone.Aeroponics.models.request.Nutrient_logsRO;
+import Capstone.Aeroponics.repositories.Nutrient_logRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,18 +16,18 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class NutrientService {
+public class Nutrient_logService {
     public static final String NUTRIENTS = "Nutrients";
 
     public static final String NUTRIENT = "Nutrient";
 
-    private final NutrientRepository nutrientRepository;
+    private final Nutrient_logRepository nutrientLogRepository;
 
-    public List<Nutrient> getAll() {
+    public List<Nutrient_log> getAll() {
         try {
-            List<Nutrient> nutrients = nutrientRepository.findAll();
-            log.info(NUTRIENT + " found: " + nutrients.size());
-            return nutrients;
+            List<Nutrient_log> nutrientLogs = nutrientLogRepository.findAll();
+            log.info(NUTRIENT + " found: " + nutrientLogs.size());
+            return nutrientLogs;
         } catch (Exception e) {
             String errorMessage = "Error while getting " + NUTRIENTS;
             log.error(errorMessage);
@@ -35,17 +35,17 @@ public class NutrientService {
         }
     }
 
-    public Optional<Nutrient> getById(Long id) {
+    public Optional<Nutrient_log> getById(Long id) {
         if (Objects.isNull(id)) {
             return Optional.empty();
         }
 
-        return nutrientRepository.findById(id);
+        return nutrientLogRepository.findById(id);
     }
 
-    public Nutrient getNutrientById(Long id) {
+    public Nutrient_log getNutrientById(Long id) {
         try {
-            Optional<Nutrient> nutrient = getById(id);
+            Optional<Nutrient_log> nutrient = getById(id);
 
             if (nutrient.isEmpty()) {
                 throw new Exception(NUTRIENT + " not found.");
@@ -59,9 +59,9 @@ public class NutrientService {
         }
     }
 
-    public void save(NutrientRO nutrientRO) {
+    public void save(Nutrient_logsRO nutrientLogsRO) {
         try {
-            nutrientRepository.save(nutrientRO.toEntity(null));
+            nutrientLogRepository.save(nutrientLogsRO.toEntity(null));
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(NUTRIENTS);
             log.error(errorMessage);
@@ -69,15 +69,15 @@ public class NutrientService {
         }
     }
 
-    public void update(Long id, NutrientRO nutrientRO) {
+    public void update(Long id, Nutrient_logsRO nutrientLogsRO) {
         try {
-            Nutrient nutrient = getNutrientById(id);
+            Nutrient_log nutrientLog = getNutrientById(id);
 
-            if (Objects.isNull(nutrient)) {
+            if (Objects.isNull(nutrientLog)) {
                 throw new ResourceNotFoundException(NUTRIENT + " not found");
             }
 
-            nutrientRepository.save(nutrientRO.toEntity(nutrient));
+            nutrientLogRepository.save(nutrientLogsRO.toEntity(nutrientLog));
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(NUTRIENT);
             log.error(errorMessage);
@@ -87,13 +87,13 @@ public class NutrientService {
 
     public void delete(Long id) {
         try {
-            Nutrient nutrient = getNutrientById(id);
+            Nutrient_log nutrientLog = getNutrientById(id);
 
-            if (Objects.isNull(nutrient)) {
+            if (Objects.isNull(nutrientLog)) {
                 throw new ResourceNotFoundException(NUTRIENT + " not found");
             }
 
-            nutrientRepository.delete(nutrient);
+            nutrientLogRepository.delete(nutrientLog);
         } catch (Exception e) {
             String errorMessage = MessageUtils.deleteErrorMessage(NUTRIENT);
             log.error(errorMessage);

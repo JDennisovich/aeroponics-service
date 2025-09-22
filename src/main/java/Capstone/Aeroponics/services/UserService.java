@@ -4,10 +4,20 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.function.Predicate;
 
+import Capstone.Aeroponics.config.security.utils.JwtTokenUtils;
+import Capstone.Aeroponics.models.DTO.user.UserDTO;
+import Capstone.Aeroponics.utils.ResponseUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.hibernate.service.spi.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import Capstone.Aeroponics.config.security.UserInfoDetails;
@@ -35,7 +45,8 @@ public class UserService implements UserDetailsService{
 
     private static final String SPECIAL_CHARS = "@$!%*?&";
 
-
+    @Autowired
+    private JwtTokenUtils jwtTokenUtils;
 
     public List<User> getall() {
         try {
@@ -66,6 +77,17 @@ public class UserService implements UserDetailsService{
             }
             log.info(MessageUtils.retrieveSuccessMessage(USER));
             return user.get();
+        } catch (Exception e) {
+            String errorMessage = MessageUtils.retrieveErrorMessage(USER);
+            log.error(errorMessage);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public UserDTO getProfile(HttpServletRequest request) {
+        try {
+            return new UserDTO(getUserProfile(request));
+
         } catch (Exception e) {
             String errorMessage = MessageUtils.retrieveErrorMessage(USER);
             log.error(errorMessage);
@@ -150,12 +172,38 @@ public class UserService implements UserDetailsService{
             .orElseThrow(() -> new UsernameNotFoundException(
                 MessageFormat.format("User with username {0} does not exist", username)));
     }
-    public User loadUserInfoByUsername(String email) throws UsernameNotFoundException {
-        return userRepository
-                .findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        MessageFormat.format("user with username {0} does not exist", email)));
+//    public User loadUserInfoByUsername(String email) throws UsernameNotFoundException {
+//        return userRepository
+//                .findByEmail(email)
+//                .orElseThrow(() -> new UsernameNotFoundException(
+//                        MessageFormat.format("user with username {0} does not exist", email)));
+//    }
+
+    public User getUserProfile(HttpServletRequest request) {
+        if (Objects.isNull(request)) {
+            return null;
+        }
+
+        Jwt token = jwtTokenUtils.decodeToken(request.getHeader(HttpHeaders.AUTHORIZATION));
+        String email = jwtTokenUtils.getUsername(token);
+        return getByEmail(email);
     }
+
+    public User getByEmail(String email) {
+        try {
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isEmpty()) {
+                return null;
+            }
+            String successMessage = MessageUtils.retrieveSuccessMessage(USERS);
+            log.info(successMessage);
+            return user.get();
+        } catch (Exception e) {
+            log.error(MessageUtils.RETRIEVE_EXCEPTION_MESSAGE, e.getMessage());
+            return null;
+        }
+    }
+
 
 }
 

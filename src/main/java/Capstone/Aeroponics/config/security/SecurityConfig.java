@@ -71,7 +71,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/user","/api/plant","/api/tower/**") //TODO: "/api/plant","/api/tower/**" must be removed
+                .securityMatcher("/api/user") //TODO: "/api/plant","/api/tower/**" must be removed
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
@@ -170,13 +170,13 @@ public class SecurityConfig {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedHeaders(List.of("*"));
-        corsConfiguration.setAllowedOriginPatterns(List.of("*")); // ✅ works with credentials
+        corsConfiguration.setAllowedOrigins(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("*"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfiguration);
-        return source;
+        UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource =
+                new UrlBasedCorsConfigurationSource();
+        urlBasedCorsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+        return urlBasedCorsConfigurationSource;
     }
-
 
     private HttpSecurity commonSecurityConfig(HttpSecurity http, String... pattern) throws Exception {
         return http

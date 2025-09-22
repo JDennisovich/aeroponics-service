@@ -1,5 +1,6 @@
 package Capstone.Aeroponics.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,17 @@ public class UserController {
                 MessageUtils.retrieveSuccessMessage(userServices.USER),
                 userServices.getUserById(id)
             )
+        );
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile(HttpServletRequest request) {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage(userServices.USER),
+                        userServices.getProfile(request)
+                )
         );
     }
 

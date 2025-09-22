@@ -1,7 +1,6 @@
 package Capstone.Aeroponics.models.DTO.nutrient;
 
-import Capstone.Aeroponics.models.entities.Nutrient;
-import Capstone.Aeroponics.models.entities.Tower;
+import Capstone.Aeroponics.models.entities.Nutrient_log;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,9 +22,9 @@ public class NutrientPhLevelDTO {
     private int phLevel;
     private LocalTime time;
 
-    public NutrientPhLevelDTO(Nutrient nutrient) {
-        this.id = nutrient.getId();
-        this.phLevel = nutrient.getPh_level();
-        this.time = nutrient.getTime();
+    public NutrientPhLevelDTO(Nutrient_log nutrientLog) {
+        this.id = nutrientLog.getId();
+        this.phLevel = nutrientLog.getPh_level();
+        this.time = nutrientLog.getTime();
     }
 }

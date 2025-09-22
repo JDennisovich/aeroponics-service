@@ -1,5 +1,6 @@
 package Capstone.Aeroponics.models.entities;
 
+import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,11 +37,17 @@ public class Tower {
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
 
+    @Column(name = "name", nullable =  false)
+    private String name;
+
+    @Column(name = "status", nullable =  false)
+    private Boolean status;
+
     @Column(name = "time", nullable =  false)
     private LocalTime time;
 
     @Column(name = "water_level", nullable = false)
-    private int waterLevel;
+    private WaterLevel waterLevel;
 
     @Column(name = "frequency", nullable = false)
     private int frequency;

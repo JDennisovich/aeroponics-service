@@ -35,8 +35,6 @@ public record TowerRO(
         tower.setWaterLevel(Objects.nonNull(water_level) ? water_level : WaterLevel.MEDIUM);
 
         tower.setFrequency(frequency);
-        tower.setStart_date(start_date);
-        tower.setEnd_date(end_date);
 
         return tower;
     }

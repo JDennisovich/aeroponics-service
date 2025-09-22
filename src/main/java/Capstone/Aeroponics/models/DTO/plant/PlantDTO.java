@@ -19,15 +19,19 @@ public class PlantDTO {
     @Id
     private long id;
     private String name;
-    private int ph_level;
-    private int ppm;
+    private int min_ph_level;
+    private int max_ph_level;
+    private int min_ppm;
+    private int max_ppm;
     private UserDTO user;
 
     public PlantDTO(Plant plant) {
         this.id = plant.getId();
         this.name = plant.getName();
-        this.ph_level = plant.getPh_level();
-        this.ppm = plant.getPpm();
+        this.min_ph_level = plant.getMin_ph_level();
+        this.max_ph_level = plant.getMax_ph_level();
+        this.min_ppm = plant.getMin_ppm();
+        this.max_ppm = plant.getMax_ppm();
         this.user = new UserDTO(plant.getUser());
     }
 }

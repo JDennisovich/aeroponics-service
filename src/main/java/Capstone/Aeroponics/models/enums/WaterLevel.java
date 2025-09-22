@@ -8,9 +8,9 @@ import lombok.RequiredArgsConstructor;
 
 public enum WaterLevel {
 
-    HIGH("High"),
-    MEDIUM("Medium"),
-    LOW("Low");
+    HIGH("HIGH"),
+    MEDIUM("MEDIUM"),
+    LOW("LOW");
 
     private final String label;
 

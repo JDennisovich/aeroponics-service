@@ -158,13 +158,16 @@ public class TowerService {
 
     public void save(TowerRO towerRO) {
         try {
-            towerRepository.save(towerRO.toEntity(null));
+            Tower tower = towerRO.toEntity(null);
+            tower.setStatus(true);
+            towerRepository.save(tower);
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);
-            log.error(errorMessage);
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }
+
 
     public void update(Long id, TowerRO towerRO) {
         try {

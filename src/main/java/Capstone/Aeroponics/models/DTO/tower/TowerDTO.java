@@ -3,6 +3,7 @@ package Capstone.Aeroponics.models.DTO.tower;
 import Capstone.Aeroponics.models.DTO.plant.PlantDTO;
 import Capstone.Aeroponics.models.DTO.user.UserDTO;
 import Capstone.Aeroponics.models.entities.Tower;
+import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,7 @@ public class TowerDTO {
     private UserDTO user;
     private PlantDTO plant;
     private LocalTime time;
-    private int waterLevel;
+    private WaterLevel waterLevel;
     private int frequency;
 
     public TowerDTO(Tower tower) {

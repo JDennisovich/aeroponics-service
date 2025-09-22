@@ -8,13 +8,13 @@ import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 
 public record TowerRO(
     int id,
     @NotNull(message = "User ID is mandatory") User user,
     @NotNull(message = "Plant is mandatory") Plant plant,
     @NotNull(message = "Name is mandatory") String name,
-    @NotNull(message = "Status is mandatory") Boolean status,
     @NotNull(message = "Time is mandatory") LocalTime time,
     @NotNull(message = "Water level is mandatory") WaterLevel water_level,
     @NotNull(message = "Frequency is mandatory") int frequency,
@@ -29,8 +29,11 @@ public record TowerRO(
         tower.setPlant(plant);
         tower.setTime(time);
         tower.setName(name);
-        tower.setStatus(status);
-        tower.setWaterLevel(water_level);
+        tower.setStatus(true);
+
+        // 👇 set WaterLevel, default to MEDIUM if null
+        tower.setWaterLevel(Objects.nonNull(water_level) ? water_level : WaterLevel.MEDIUM);
+
         tower.setFrequency(frequency);
         tower.setStart_date(start_date);
         tower.setEnd_date(end_date);

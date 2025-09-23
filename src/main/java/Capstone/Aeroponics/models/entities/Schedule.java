@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 @Builder
@@ -24,18 +25,7 @@ public class Schedule {
     @JoinColumn(name = "tower_id", nullable = false)
     private Tower tower;
 
-    @Column(name = "start_hour", nullable = false)
-    private int start_hour;
+    @Column(name = "start_time", nullable = false)
+    private LocalTime start_time;
 
-    @Column(name = "start_minute", nullable = false)
-    private int start_minute;
-
-    @Column(name = "duration", nullable = false)
-    private int durationMinute;
-
-    @Column(name = "start_date", nullable = false)
-    private LocalDate start_date;
-
-    @Column(name = "end_date", nullable = false)
-    private LocalDate end_date;
 }

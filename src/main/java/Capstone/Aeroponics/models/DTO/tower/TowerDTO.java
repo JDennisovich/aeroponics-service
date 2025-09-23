@@ -10,6 +10,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Getter
@@ -26,6 +28,8 @@ public class TowerDTO {
     private LocalTime time;
     private WaterLevel waterLevel;
     private int frequency;
+    private LocalDate startDate;
+    private LocalDate endDate;
 
     public TowerDTO(Tower tower) {
         this.id = tower.getId();
@@ -34,5 +38,7 @@ public class TowerDTO {
         this.time = tower.getTime();
         this.waterLevel = tower.getWaterLevel();
         this.frequency = tower.getFrequency();
+        this.startDate = tower.getStart_date();
+        this.endDate = tower.getEnd_date();
     }
 }

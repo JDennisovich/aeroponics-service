@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -29,6 +30,9 @@ public class Tower {
     @ManyToOne
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
+
+    @OneToMany(mappedBy = "tower", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Schedule> schedules;
 
     @Column(name = "name", nullable =  false)
     private String name;
@@ -51,4 +55,5 @@ public class Tower {
 
     @Column(name = "end_date", nullable = false)
     private LocalDate end_date;
+
 }

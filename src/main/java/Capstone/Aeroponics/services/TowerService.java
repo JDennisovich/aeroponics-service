@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
+import Capstone.Aeroponics.models.entities.Schedule;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
@@ -158,15 +159,42 @@ public class TowerService {
 
     public void save(TowerRO towerRO) {
         try {
+            // Convert RO → Entity
             Tower tower = towerRO.toEntity(null);
             tower.setStatus(true);
+
+            // Validate schedules count against frequency
+            if (towerRO.schedules() != null) {
+                int scheduleCount = towerRO.schedules().size();
+                if (scheduleCount != towerRO.frequency()) {
+                    throw new ServiceException(
+                            "Invalid number of schedules: expected " + towerRO.frequency()
+                                    + " but got " + scheduleCount
+                    );
+                }
+
+                // Map schedules to entity and link back to tower
+                tower.setSchedules(
+                        towerRO.schedules().stream()
+                                .map(scheduleRO -> {
+                                    Schedule schedule = scheduleRO.toEntity(null);
+                                    schedule.setTower(tower);
+                                    return schedule;
+                                })
+                                .toList()
+                );
+            }
+
+            // Save tower with schedules
             towerRepository.save(tower);
+
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);
             log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }
+
 
 
     public void update(Long id, TowerRO towerRO) {

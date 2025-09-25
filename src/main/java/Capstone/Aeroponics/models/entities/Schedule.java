@@ -1,10 +1,8 @@
 package Capstone.Aeroponics.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -23,6 +21,7 @@ public class Schedule {
 
     @ManyToOne
     @JoinColumn(name = "tower_id", nullable = false)
+    @ToString.Exclude
     private Tower tower;
 
     @Column(name = "start_time", nullable = false)

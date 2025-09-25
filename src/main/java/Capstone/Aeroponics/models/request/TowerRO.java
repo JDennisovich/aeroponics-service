@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public record TowerRO(
-        int id,
+        Long id,
         @NotNull(message = "User is mandatory") User user,
         @NotNull(message = "Plant is mandatory") Plant plant,
         @NotNull(message = "Name is mandatory") String name,
@@ -30,9 +30,12 @@ public record TowerRO(
             tower = new Tower();
         }
 
+        if (id != null) {
+            tower.setId(id);
+        }
+
         tower.setUser(user);
         tower.setPlant(plant);
-        tower.setTime(time);
         tower.setName(name);
         tower.setStatus(true);
         tower.setWaterLevel(Objects.nonNull(water_level) ? water_level : WaterLevel.MEDIUM);
@@ -40,16 +43,24 @@ public record TowerRO(
         tower.setStart_date(start_date);
         tower.setEnd_date(end_date);
 
-        // ✅ Handle nested schedules
+        // ✅ Handle nested schedules safely
         if (schedules != null && !schedules.isEmpty()) {
-            final Tower finalTower = tower; // make tower effectively final
+            final Tower finalTower = tower;
 
             List<Schedule> scheduleEntities = schedules.stream()
+                    .filter(Objects::nonNull) // skip null ScheduleRO
                     .map(scheduleRO -> {
                         Schedule schedule = scheduleRO.toEntity(new Schedule());
+
+                        // safeguard against null start_time
+                        if (schedule.getStart_time() == null) {
+                            return null; // skip invalid schedule
+                        }
+
                         schedule.setTower(finalTower); // link back to tower
                         return schedule;
                     })
+                    .filter(Objects::nonNull) // ensure only valid schedules
                     .collect(Collectors.toList());
 
             tower.setSchedules(scheduleEntities);

@@ -52,7 +52,7 @@ public class TowerController {
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
                 MessageUtils.retrieveSuccessMessage(towerService.TOWER),
-                towerService.getTowerById(id)
+                towerService.getTowerByIdDTO(id)
             )
         );
     }

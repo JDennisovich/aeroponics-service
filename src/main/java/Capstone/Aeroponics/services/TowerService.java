@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
+import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Schedule;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
@@ -24,6 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+
+//Fix save of tower with schedules
+//Integ of manage tower at save tower
 public class TowerService {
     public static final String TOWERS = "Towers";
 
@@ -33,23 +37,33 @@ public class TowerService {
 
     private final Nutrient_logRepository Nutrient_logRepository;
 
-    public List<Tower> getAll() {
+    public List<TowerDTO> getAll() {
         try {
             List<Tower> towers = towerRepository.findAll();
-            log.info(TOWERS + " found: " + towers.size());
-            return towers;
+            List<TowerDTO> towerDTOs = towers.stream()
+                    .map(TowerDTO::new)
+                    .toList();
+
+            log.info(TOWERS + " found: " + towerDTOs.size());
+            return towerDTOs;
         } catch (Exception e) {
             String errorMessage = "Error while getting " + TOWERS;
-            log.error(errorMessage);
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }
 
-    public List<Tower> getTowersByUserId(Long id) {
+
+    public List<TowerDTO> getTowersByUserId(Long id) {
         try {
             List<Tower> towers = towerRepository.findByUserId(id);
             log.info(TOWERS + " found for userId " + id + ": " + towers.size());
-            return towers;
+
+            // Use the TowerDTO constructor
+            return towers.stream()
+                    .map(TowerDTO::new)
+                    .toList(); // If on Java 8 → use .collect(Collectors.toList())
+
         } catch (Exception e) {
             String errorMessage = "Error while getting " + TOWERS + " for userId " + id;
             log.error(errorMessage, e);
@@ -57,12 +71,30 @@ public class TowerService {
         }
     }
 
+
     public Optional<Tower> getById(Long id) {
         if (Objects.isNull(id)) {
             return Optional.empty();
         }
 
         return towerRepository.findById(id);
+    }
+
+    public TowerDTO getTowerByIdDTO(Long id) {
+        try {
+            Optional<Tower> tower = getById(id);
+
+            if (tower.isEmpty()) {
+                throw new Exception(TOWER + " not found.");
+            }
+
+            log.info(TOWER + " found.");
+            return new TowerDTO(tower.get());  // wrap with DTO
+        } catch (Exception e) {
+            String errorMessage = "Error while getting " + TOWER;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
     }
 
     public Tower getTowerById(Long id) {
@@ -199,16 +231,43 @@ public class TowerService {
 
     public void update(Long id, TowerRO towerRO) {
         try {
-            Tower tower = getTowerById(id);
-
-            if (Objects.isNull(tower)) {
+            // ✅ Check if tower exists
+            if (!towerRepository.existsById(id)) {
                 throw new ResourceNotFoundException(TOWER + " not found");
             }
 
-            towerRepository.save(towerRO.toEntity(tower));
+            // ✅ Create updated tower with the existing ID
+            Tower tower = towerRO.toEntity(null);
+            tower.setId(id); // Set the ID for update
+            tower.setStatus(true); // Ensure status is set
+
+            // ✅ Handle schedules (same logic as save method)
+            if (towerRO.schedules() != null) {
+                int scheduleCount = towerRO.schedules().size();
+                if (scheduleCount != towerRO.frequency()) {
+                    throw new ServiceException(
+                            "Invalid number of schedules: expected " + towerRO.frequency()
+                                    + " but got " + scheduleCount
+                    );
+                }
+
+                List<Schedule> schedules = towerRO.schedules().stream()
+                        .map(scheduleRO -> {
+                            Schedule schedule = scheduleRO.toEntity(null);
+                            schedule.setTower(tower);
+                            return schedule;
+                        })
+                        .toList();
+
+                tower.setSchedules(schedules);
+            }
+
+            // ✅ Save (JPA will handle update because ID exists)
+            towerRepository.save(tower);
+
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);
-            log.error(errorMessage);
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }

@@ -1,12 +1,12 @@
 package Capstone.Aeroponics.models.request;
 
 import Capstone.Aeroponics.models.entities.Schedule;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record ScheduleRO(
-        int id,
+        long id,
         @NotNull(message = "Start hour is mandatory") LocalTime start_time
 ) {
     public Schedule toEntity(Schedule schedule) {

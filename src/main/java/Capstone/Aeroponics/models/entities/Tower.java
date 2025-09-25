@@ -2,10 +2,7 @@ package Capstone.Aeroponics.models.entities;
 
 import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -32,6 +29,7 @@ public class Tower {
     private Plant plant;
 
     @OneToMany(mappedBy = "tower", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private List<Schedule> schedules;
 
     @Column(name = "name", nullable =  false)
@@ -39,9 +37,6 @@ public class Tower {
 
     @Column(name = "status", nullable =  false)
     private Boolean status;
-
-    @Column(name = "time", nullable =  false)
-    private LocalTime time;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "water_level", nullable = false)

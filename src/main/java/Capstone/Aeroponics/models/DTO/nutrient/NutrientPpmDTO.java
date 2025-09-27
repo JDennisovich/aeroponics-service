@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 
 @Getter
@@ -19,7 +20,7 @@ public class NutrientPpmDTO {
 
     @Id
     private long id;
-    private int ppm;
+    private BigDecimal ppm;
     private LocalTime time;
 
     public NutrientPpmDTO(Nutrient_log nutrientLog) {

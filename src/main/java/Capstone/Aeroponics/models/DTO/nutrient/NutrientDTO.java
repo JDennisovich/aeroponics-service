@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 
 @Getter
@@ -22,8 +23,8 @@ public class NutrientDTO {
     private long id;
     private TowerDTO tower;
     private LocalTime time;
-    private int ph_level;
-    private int ppm;
+    private BigDecimal ph_level;
+    private BigDecimal ppm;
 
     public NutrientDTO(Nutrient_log nutrientLog) {
         this.id = nutrientLog.getId();

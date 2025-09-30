@@ -23,7 +23,6 @@ public class PlantDTO {
     private int max_ph_level;
     private int min_ppm;
     private int max_ppm;
-    private UserDTO user;
 
     public PlantDTO(Plant plant) {
         this.id = plant.getId();
@@ -32,6 +31,5 @@ public class PlantDTO {
         this.max_ph_level = plant.getMax_ph_level();
         this.min_ppm = plant.getMin_ppm();
         this.max_ppm = plant.getMax_ppm();
-        this.user = new UserDTO(plant.getUser());
     }
 }

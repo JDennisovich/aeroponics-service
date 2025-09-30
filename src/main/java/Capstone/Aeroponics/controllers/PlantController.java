@@ -32,7 +32,7 @@ public class PlantController {
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
                 MessageUtils.retrieveSuccessMessage(plantServices.PLANTS),
-                plantServices.getall()
+                plantServices.getAll()
             )
         );
     }
@@ -75,6 +75,18 @@ public class PlantController {
         plantServices.saveAll(plantROList);
         return ResponseEntity.ok("Plants saved successfully");
     }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<?> getPlantsByUserId(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage(plantServices.PLANTS),
+                        plantServices.getPlantsByUserId(id)
+                )
+        );
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable long id, @RequestBody PlantRO plantRO) {

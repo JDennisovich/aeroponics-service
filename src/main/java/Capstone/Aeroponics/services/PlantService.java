@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import Capstone.Aeroponics.models.DTO.plant.PlantDTO;
 import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.request.PlantRO;
 import Capstone.Aeroponics.repositories.UserRepository;
@@ -31,19 +32,24 @@ public class PlantService {
 
     private final UserRepository userRepository;
 
-    //Note: paayos ng Http response, naka success kahit empty dapat empty yung message response. Pa double check naden ng lahat
-    public List<Plant> getall() {
+    public List<PlantDTO> getAll() {
         try {
             List<Plant> plants = plantRepository.findAll();
-            log.info(PLANT + " found: " + plants.size());
-            return plants;
+
+            List<PlantDTO> plantDTOs = plants.stream()
+                    .map(PlantDTO::new)  // use your constructor
+                    .toList();
+
+            log.info(PLANT + " found: " + plantDTOs.size());
+            return plantDTOs;
         } catch (Exception e) {
-            String errormessage = "Error while getting " + PLANTS;
-            log.error(errormessage);
-            throw new ServiceException(errormessage, e);
+            String errorMessage = "Error while getting " + PLANTS;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
         }
     }
-    
+
+
     public Optional<Plant> getById(Long id) {
         if (Objects.isNull(id)) {
             return Optional.empty();
@@ -125,6 +131,22 @@ public class PlantService {
         }
     }
 
+    public List<PlantDTO> getPlantsByUserId(Long id) {
+        try {
+            List<Plant> plants = plantRepository.findByUserId(id);
+            log.info(PLANTS + " found for userId " + id + ": " + plants.size());
+
+            // Use the PlantDTO constructor
+            return plants.stream()
+                    .map(PlantDTO::new)
+                    .toList(); // If on Java 8 → use .collect(Collectors.toList())
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting " + PLANTS + " for userId " + id;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
 
     public void update(Long id, PlantRO plantRO) {
         try {
@@ -148,7 +170,6 @@ public class PlantService {
             throw new ServiceException(errorMessage, e);
         }
     }
-
 
     public void delete(Long id) {
         try {

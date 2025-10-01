@@ -1,6 +1,7 @@
 package Capstone.Aeroponics.models.entities;
 
 import Capstone.Aeroponics.models.enums.WaterLevel;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class Nutrient_log {
 
     @ManyToOne
     @JoinColumn(name = "tower_id", nullable = false)
+    @JsonIgnoreProperties({"schedules", "user"})
     private Tower tower;
 
     @Column (name = "time", nullable = false)

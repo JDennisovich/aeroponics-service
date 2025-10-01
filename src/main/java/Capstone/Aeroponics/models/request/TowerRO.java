@@ -23,6 +23,7 @@ public record TowerRO(
         @NotNull(message = "Frequency is mandatory") int frequency,
         @NotNull(message = "Start date is mandatory") LocalDate start_date,
         @NotNull(message = "End date is mandatory") LocalDate end_date,
+        Boolean status, // Optional status field
         List<ScheduleRO> schedules // ✅ Nested schedules
 ) {
     public Tower toEntity(Tower tower) {
@@ -37,7 +38,7 @@ public record TowerRO(
         tower.setUser(user);
         tower.setPlant(plant);
         tower.setName(name);
-        tower.setStatus(true);
+        tower.setStatus(Objects.nonNull(status) ? status : true); // Use provided status or default to true
         tower.setWaterLevel(Objects.nonNull(water_level) ? water_level : WaterLevel.MEDIUM);
         tower.setFrequency(frequency);
         tower.setStart_date(start_date);

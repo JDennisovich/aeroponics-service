@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import Capstone.Aeroponics.models.DTO.plant.PlantDTO;
 import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.request.PlantRO;
 import Capstone.Aeroponics.repositories.UserRepository;
@@ -79,6 +80,23 @@ public class PlantService {
             return plantNames;
         } catch (Exception e) {
             String errorMessage = "Error while getting plant names";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    public List<PlantDTO> getPlantsByUserId(Long id) {
+        try {
+            List<Plant> plants = plantRepository.findByUserId(id);
+            log.info(PLANTS + " found for userId " + id + ": " + plants.size());
+
+            // Use the PlantDTO constructor
+            return plants.stream()
+                    .map(PlantDTO::new)
+                    .toList(); // If on Java 8 → use .collect(Collectors.toList())
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting " + PLANTS + " for userId " + id;
             log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }

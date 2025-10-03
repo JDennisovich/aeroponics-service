@@ -87,7 +87,6 @@ public class PlantController {
         );
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable long id, @RequestBody PlantRO plantRO) {
         plantServices.update(id, plantRO);

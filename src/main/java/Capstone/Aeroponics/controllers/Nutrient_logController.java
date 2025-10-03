@@ -36,6 +36,17 @@ public class Nutrient_logController {
         );
     }
 
+    @GetMapping("/tower/{id}")
+    public ResponseEntity<?> getNutrientsByTowerId(@PathVariable Long id) {
+        return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                        HttpStatus.OK,
+                        MessageUtils.retrieveSuccessMessage(nutrientLogService.NUTRIENTS),
+                        nutrientLogService.getNutrientsByTowerId(id)
+                )
+        );
+    }
+
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Nutrient_logsRO nutrientLogsRO) {
         nutrientLogService.save(nutrientLogsRO);

@@ -90,6 +90,23 @@ public class PlantService {
         }
     }
 
+    public List<PlantDTO> getPlantsByUserId(Long id) {
+        try {
+            List<Plant> plants = plantRepository.findByUserId(id);
+            log.info(PLANTS + " found for userId " + id + ": " + plants.size());
+
+            // Use the PlantDTO constructor
+            return plants.stream()
+                    .map(PlantDTO::new)
+                    .toList(); // If on Java 8 → use .collect(Collectors.toList())
+
+        } catch (Exception e) {
+            String errorMessage = "Error while getting " + PLANTS + " for userId " + id;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
 
     public void save(PlantRO plantRO) {
         try {

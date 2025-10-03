@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
 import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
+import Capstone.Aeroponics.models.entities.Device;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Schedule;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
@@ -36,6 +37,8 @@ public class TowerService {
     private final TowerRepository towerRepository;
 
     private final Nutrient_logRepository Nutrient_logRepository;
+    
+    private final DeviceService deviceService;
 
     public List<TowerDTO> getAll() {
         try {
@@ -217,8 +220,20 @@ public class TowerService {
                 );
             }
 
-            // Save tower with schedules
-            towerRepository.save(tower);
+            // Save tower with schedules FIRST
+            Tower savedTower = towerRepository.save(tower);
+            
+            // Auto-assign a FREE device to this tower
+            Device freeDevice = deviceService.findFreeDevice();
+            if (freeDevice == null) {
+                throw new ServiceException("No available devices to assign to tower");
+            }
+            
+            // Assign device and link to the SAVED tower
+            freeDevice.setTower(savedTower);
+            deviceService.assignDevice(freeDevice);
+            
+            log.info("Assigned device {} to tower {}", freeDevice.getMacAddress(), savedTower.getName());
 
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);

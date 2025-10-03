@@ -27,7 +27,7 @@ public class AeroponicsApplication {
 		SpringApplication.run(AeroponicsApplication.class, args);
 	}
 
-	 @Autowired
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired

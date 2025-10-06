@@ -16,29 +16,15 @@ public class AnalyticsController {
     private final AnalyticsService analyticsService;
 
     /**
-     * Get harvest predictions for all towers of a user
+     * Get nutrient depletion analysis for a specific tower
      */
-    @GetMapping("/harvest-prediction/user/{userId}")
-    public ResponseEntity<?> getHarvestPredictionsByUser(@PathVariable Long userId) {
+    @GetMapping("/nutrient-depletion/tower/{towerId}")
+    public ResponseEntity<?> getNutrientDepletionByTower(@PathVariable Long towerId) {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.retrieveSuccessMessage("Harvest Predictions"),
-                analyticsService.getHarvestPredictionsByUserId(userId)
-            )
-        );
-    }
-
-    /**
-     * Get harvest prediction for a specific tower
-     */
-    @GetMapping("/harvest-prediction/tower/{towerId}")
-    public ResponseEntity<?> getHarvestPredictionByTower(@PathVariable Long towerId) {
-        return ResponseEntity.ok(
-            ResponseUtils.buildSuccessResponse(
-                HttpStatus.OK,
-                MessageUtils.retrieveSuccessMessage("Harvest Prediction"),
-                analyticsService.getHarvestPredictionByTowerId(towerId)
+                MessageUtils.retrieveSuccessMessage("Nutrient Depletion Analysis"),
+                analyticsService.getNutrientDepletionByTowerId(towerId)
             )
         );
     }

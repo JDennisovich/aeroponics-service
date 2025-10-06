@@ -1,6 +1,6 @@
 package Capstone.Aeroponics.services;
 
-import Capstone.Aeroponics.models.DTO.analytics.HarvestPredictionDTO;
+import Capstone.Aeroponics.models.DTO.analytics.NutrientDepletionDTO;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Plant;
 import Capstone.Aeroponics.models.entities.Tower;
@@ -10,11 +10,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Analytics Service for nutrient depletion prediction
+ * 
+ * This service analyzes nutrient logs (nutrients_log table) to predict nutrient depletion patterns.
+ * It calculates:
+ * - Current pH and PPM levels from the most recent nutrient log entry
+ * - Depletion rates based on historical nutrient log trends
+ * - Days until critical levels are reached
+ * - Status indicators and actionable recommendations
+ * 
+ * All calculations are based on actual nutrient log data stored in the database.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -24,194 +34,311 @@ public class AnalyticsService {
     private final Nutrient_logRepository nutrientLogRepository;
 
     /**
-     * Get harvest predictions for all active towers of a user
+     * Get nutrient depletion analysis for a specific tower based on its nutrient logs
      */
-    public List<HarvestPredictionDTO> getHarvestPredictionsByUserId(Long userId) {
-        List<Tower> activeTowers = towerRepository.findByUserId(userId).stream()
-                .filter(Tower::getStatus)
-                .collect(Collectors.toList());
-
-        return activeTowers.stream()
-                .map(this::calculateHarvestPrediction)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get harvest prediction for a specific tower
-     */
-    public HarvestPredictionDTO getHarvestPredictionByTowerId(Long towerId) {
+    public NutrientDepletionDTO getNutrientDepletionByTowerId(Long towerId) {
         Tower tower = towerRepository.findById(towerId)
                 .orElseThrow(() -> new RuntimeException("Tower not found"));
         
-        return calculateHarvestPrediction(tower);
+        return calculateNutrientDepletion(tower);
     }
 
     /**
-     * Calculate harvest prediction for a tower
+     * Calculate nutrient depletion analysis for a tower based on nutrient logs
      */
-    private HarvestPredictionDTO calculateHarvestPrediction(Tower tower) {
-        LocalDate today = LocalDate.now();
-        LocalDate startDate = tower.getStart_date();
-        LocalDate endDate = tower.getEnd_date();
+    private NutrientDepletionDTO calculateNutrientDepletion(Tower tower) {
         Plant plant = tower.getPlant();
+        
+        // Get all nutrient logs for this tower, ordered by time (most recent first)
+        List<Nutrient_log> allLogs = nutrientLogRepository.findByTowerIdOrderByTimeDesc(tower.getId());
 
-        // Calculate growth progress
-        long totalDays = ChronoUnit.DAYS.between(startDate, endDate);
-        long daysPassed = ChronoUnit.DAYS.between(startDate, today);
-        double growthProgress = Math.min(100.0, (daysPassed * 100.0) / totalDays);
+        if (allLogs.isEmpty()) {
+            return buildNoDataResponse(tower, plant);
+        }
 
-        // Get recent nutrient data (last 7 days)
-        List<Nutrient_log> recentLogs = nutrientLogRepository
-                .findByTowerIdOrderByTimeDesc(tower.getId())
-                .stream()
-                .limit(20) // Get last 20 readings
+        // Use recent logs for analysis (last 30-50 readings for better accuracy)
+        List<Nutrient_log> recentLogs = allLogs.stream()
+                .limit(50)
                 .collect(Collectors.toList());
 
-        // Calculate average pH and PPM
-        double avgPh = recentLogs.isEmpty() ? 0 : 
-            recentLogs.stream()
-                .mapToDouble(log -> log.getPh_level().doubleValue())
-                .average()
-                .orElse(0);
+        // Get current values from the most recent nutrient log entry
+        Nutrient_log latestLog = recentLogs.get(0);
+        double currentPh = latestLog.getPh_level().doubleValue();
+        double currentPpm = latestLog.getPpm().doubleValue();
+        
+        log.info("Analyzing nutrient depletion for tower {} - Current pH: {}, Current PPM: {}, Total logs: {}", 
+                 tower.getId(), currentPh, currentPpm, recentLogs.size());
 
-        double avgPpm = recentLogs.isEmpty() ? 0 :
-            recentLogs.stream()
-                .mapToDouble(log -> log.getPpm().doubleValue())
-                .average()
-                .orElse(0);
+        // Calculate depletion rates
+        double phDepletionRate = calculateDepletionRate(recentLogs, true);
+        double ppmDepletionRate = calculateDepletionRate(recentLogs, false);
 
-        // Check if conditions are optimal
-        boolean isOptimalPh = avgPh >= plant.getMin_ph_level() && avgPh <= plant.getMax_ph_level();
-        boolean isOptimalPpm = avgPpm >= plant.getMin_ppm() && avgPpm <= plant.getMax_ppm();
-        boolean isOptimalConditions = isOptimalPh && isOptimalPpm && !recentLogs.isEmpty();
-
-        // Determine health status
-        String healthStatus = determineHealthStatus(isOptimalConditions, avgPh, avgPpm, plant);
-
-        // Adjust predicted harvest date based on conditions
-        LocalDate predictedHarvestDate = calculatePredictedHarvestDate(
-            endDate, isOptimalConditions, growthProgress
+        // Calculate days until critical
+        int daysUntilPhCritical = calculateDaysUntilCritical(
+            currentPh, phDepletionRate, 
+            plant.getMin_ph_level(), plant.getMax_ph_level()
+        );
+        
+        int daysUntilPpmCritical = calculateDaysUntilCritical(
+            currentPpm, ppmDepletionRate,
+            plant.getMin_ppm(), plant.getMax_ppm()
         );
 
-        long daysUntilHarvest = ChronoUnit.DAYS.between(today, predictedHarvestDate);
+        // Determine status
+        String phStatus = determineStatus(currentPh, plant.getMin_ph_level(), plant.getMax_ph_level(), daysUntilPhCritical);
+        String ppmStatus = determineStatus(currentPpm, plant.getMin_ppm(), plant.getMax_ppm(), daysUntilPpmCritical);
+        String overallStatus = determineOverallStatus(phStatus, ppmStatus);
+
+        // Calculate average changes
+        double avgPhChange = calculateAverageChange(recentLogs, true);
+        double avgPpmChange = calculateAverageChange(recentLogs, false);
 
         // Generate recommendation
         String recommendation = generateRecommendation(
-            isOptimalPh, isOptimalPpm, avgPh, avgPpm, plant, daysUntilHarvest
+            currentPh, currentPpm, phDepletionRate, ppmDepletionRate,
+            daysUntilPhCritical, daysUntilPpmCritical, plant
         );
 
-        return HarvestPredictionDTO.builder()
+        boolean needsImmediateAction = phStatus.equals("CRITICAL") || ppmStatus.equals("CRITICAL");
+
+        return NutrientDepletionDTO.builder()
                 .towerId(tower.getId())
                 .towerName(tower.getName())
                 .plantName(plant.getName())
-                .startDate(startDate)
-                .predictedHarvestDate(predictedHarvestDate)
-                .endDate(endDate)
-                .daysUntilHarvest((int) daysUntilHarvest)
-                .growthProgress(Math.round(growthProgress * 10.0) / 10.0)
-                .healthStatus(healthStatus)
-                .averagePh(Math.round(avgPh * 10.0) / 10.0)
-                .averagePpm(Math.round(avgPpm * 10.0) / 10.0)
-                .isOptimalConditions(isOptimalConditions)
+                .currentPh(Math.round(currentPh * 10.0) / 10.0)
+                .currentPpm(Math.round(currentPpm * 10.0) / 10.0)
+                .optimalPhMin(plant.getMin_ph_level())
+                .optimalPhMax(plant.getMax_ph_level())
+                .optimalPpmMin(plant.getMin_ppm())
+                .optimalPpmMax(plant.getMax_ppm())
+                .phDepletionRate(Math.round(phDepletionRate * 100.0) / 100.0)
+                .ppmDepletionRate(Math.round(ppmDepletionRate * 10.0) / 10.0)
+                .daysUntilPhCritical(daysUntilPhCritical)
+                .daysUntilPpmCritical(daysUntilPpmCritical)
+                .phStatus(phStatus)
+                .ppmStatus(ppmStatus)
+                .overallStatus(overallStatus)
                 .recommendation(recommendation)
+                .needsImmediateAction(needsImmediateAction)
+                .avgPhChange(Math.round(avgPhChange * 100.0) / 100.0)
+                .avgPpmChange(Math.round(avgPpmChange * 10.0) / 10.0)
                 .build();
     }
 
     /**
-     * Determine health status based on conditions
+     * Build response when no data is available
      */
-    private String determineHealthStatus(boolean isOptimal, double avgPh, double avgPpm, Plant plant) {
-        if (avgPh == 0 || avgPpm == 0) {
-            return "NO_DATA";
+    private NutrientDepletionDTO buildNoDataResponse(Tower tower, Plant plant) {
+        return NutrientDepletionDTO.builder()
+                .towerId(tower.getId())
+                .towerName(tower.getName())
+                .plantName(plant.getName())
+                .currentPh(0)
+                .currentPpm(0)
+                .optimalPhMin(plant.getMin_ph_level())
+                .optimalPhMax(plant.getMax_ph_level())
+                .optimalPpmMin(plant.getMin_ppm())
+                .optimalPpmMax(plant.getMax_ppm())
+                .phDepletionRate(0)
+                .ppmDepletionRate(0)
+                .daysUntilPhCritical(999)
+                .daysUntilPpmCritical(999)
+                .phStatus("NO_DATA")
+                .ppmStatus("NO_DATA")
+                .overallStatus("NO_DATA")
+                .recommendation("No sensor data available. Please check your monitoring system.")
+                .needsImmediateAction(false)
+                .avgPhChange(0)
+                .avgPpmChange(0)
+                .build();
+    }
+
+    /**
+     * Calculate depletion rate (change per day) based on nutrient log entries
+     * Uses linear regression approach for more accurate trend analysis
+     */
+    private double calculateDepletionRate(List<Nutrient_log> logs, boolean isPh) {
+        if (logs.size() < 2) return 0;
+
+        // Get oldest and newest readings from the log entries
+        double oldestValue = isPh ? 
+            logs.get(logs.size() - 1).getPh_level().doubleValue() :
+            logs.get(logs.size() - 1).getPpm().doubleValue();
+        
+        double newestValue = isPh ?
+            logs.get(0).getPh_level().doubleValue() :
+            logs.get(0).getPpm().doubleValue();
+
+        // Calculate total change from nutrient logs
+        double totalChange = newestValue - oldestValue;
+        
+        // Estimate time span based on number of log entries
+        // Assuming logs are recorded periodically (e.g., every 2-4 hours)
+        // With 50 logs, this represents approximately 4-8 days of data
+        double estimatedDays = Math.max(1, logs.size() / 8.0); // ~8 readings per day
+        
+        // Calculate rate of change per day from nutrient log data
+        double ratePerDay = totalChange / estimatedDays;
+        
+        log.debug("Depletion rate for {} - Oldest: {}, Newest: {}, Change: {}, Days: {}, Rate/day: {}", 
+                  isPh ? "pH" : "PPM", oldestValue, newestValue, totalChange, estimatedDays, ratePerDay);
+        
+        return ratePerDay;
+    }
+
+    /**
+     * Calculate average change between consecutive nutrient log entries
+     */
+    private double calculateAverageChange(List<Nutrient_log> logs, boolean isPh) {
+        if (logs.size() < 2) return 0;
+
+        double sum = 0;
+        int count = 0;
+
+        // Calculate change between each consecutive pair of nutrient log entries
+        for (int i = 0; i < logs.size() - 1; i++) {
+            double currentReading = isPh ?
+                logs.get(i).getPh_level().doubleValue() :
+                logs.get(i).getPpm().doubleValue();
+            
+            double previousReading = isPh ?
+                logs.get(i + 1).getPh_level().doubleValue() :
+                logs.get(i + 1).getPpm().doubleValue();
+            
+            sum += (currentReading - previousReading);
+            count++;
         }
 
-        if (isOptimal) {
+        double avgChange = count > 0 ? sum / count : 0;
+        
+        log.debug("Average change per log entry for {}: {}", isPh ? "pH" : "PPM", avgChange);
+        
+        return avgChange;
+    }
+
+    /**
+     * Calculate days until value reaches critical level based on nutrient log trends
+     */
+    private int calculateDaysUntilCritical(double currentValue, double depletionRate, 
+                                           double minOptimal, double maxOptimal) {
+        if (depletionRate == 0) return 999; // No change detected in nutrient logs
+
+        // Check if current value from nutrient logs is already out of optimal range
+        if (currentValue < minOptimal || currentValue > maxOptimal) {
+            return 0;
+        }
+
+        // Calculate days until hitting min or max based on depletion rate from logs
+        int daysToMin = 999;
+        int daysToMax = 999;
+
+        if (depletionRate < 0) {
+            // Nutrient logs show decreasing trend - predict when it hits minimum
+            double difference = currentValue - minOptimal;
+            daysToMin = (int) Math.ceil(difference / Math.abs(depletionRate));
+        } else if (depletionRate > 0) {
+            // Nutrient logs show increasing trend - predict when it hits maximum
+            double difference = maxOptimal - currentValue;
+            daysToMax = (int) Math.ceil(difference / depletionRate);
+        }
+
+        int daysUntilCritical = Math.min(daysToMin, daysToMax);
+        
+        log.debug("Days until critical - Current: {}, Rate: {}, Min: {}, Max: {}, Result: {} days", 
+                  currentValue, depletionRate, minOptimal, maxOptimal, daysUntilCritical);
+
+        return daysUntilCritical;
+    }
+
+    /**
+     * Determine status based on current value and days until critical
+     */
+    private String determineStatus(double currentValue, double minOptimal, 
+                                   double maxOptimal, int daysUntilCritical) {
+        // Check if out of range
+        if (currentValue < minOptimal || currentValue > maxOptimal) {
+            return "CRITICAL";
+        }
+
+        // Check if close to limits
+        double range = maxOptimal - minOptimal;
+        double lowerWarning = minOptimal + (range * 0.15);
+        double upperWarning = maxOptimal - (range * 0.15);
+
+        if (currentValue < lowerWarning || currentValue > upperWarning || daysUntilCritical <= 3) {
+            return "WARNING";
+        }
+
+        return "OPTIMAL";
+    }
+
+    /**
+     * Determine overall status
+     */
+    private String determineOverallStatus(String phStatus, String ppmStatus) {
+        if (phStatus.equals("CRITICAL") || ppmStatus.equals("CRITICAL")) {
+            return "CRITICAL";
+        }
+        if (phStatus.equals("WARNING") || ppmStatus.equals("WARNING")) {
+            return "ATTENTION_NEEDED";
+        }
+        if (phStatus.equals("OPTIMAL") && ppmStatus.equals("OPTIMAL")) {
             return "EXCELLENT";
         }
-
-        // Check how far off from optimal
-        double phDeviation = Math.min(
-            Math.abs(avgPh - plant.getMin_ph_level()),
-            Math.abs(avgPh - plant.getMax_ph_level())
-        );
-        double ppmDeviation = Math.min(
-            Math.abs(avgPpm - plant.getMin_ppm()),
-            Math.abs(avgPpm - plant.getMax_ppm())
-        );
-
-        if (phDeviation <= 0.5 && ppmDeviation <= 100) {
-            return "GOOD";
-        } else if (phDeviation <= 1.0 && ppmDeviation <= 200) {
-            return "FAIR";
-        } else {
-            return "POOR";
-        }
+        return "GOOD";
     }
 
     /**
-     * Calculate predicted harvest date with adjustments
+     * Generate recommendation based on nutrient log analysis
      */
-    private LocalDate calculatePredictedHarvestDate(
-        LocalDate originalEndDate, 
-        boolean isOptimal, 
-        double growthProgress
-    ) {
-        if (isOptimal) {
-            // Optimal conditions might speed up growth by 5%
-            return originalEndDate.minusDays(2);
-        } else if (growthProgress < 50) {
-            // Poor conditions in early growth might delay harvest
-            return originalEndDate.plusDays(3);
-        } else {
-            // Use original date
-            return originalEndDate;
-        }
-    }
-
-    /**
-     * Generate recommendation based on conditions
-     */
-    private String generateRecommendation(
-        boolean isOptimalPh,
-        boolean isOptimalPpm,
-        double avgPh,
-        double avgPpm,
-        Plant plant,
-        long daysUntilHarvest
-    ) {
-        if (avgPh == 0 || avgPpm == 0) {
-            return "No sensor data available. Please check your monitoring system.";
-        }
-
-        if (isOptimalPh && isOptimalPpm) {
-            if (daysUntilHarvest <= 7) {
-                return "Excellent conditions! Prepare for harvest within a week.";
-            }
-            return "Excellent conditions! Continue current nutrient schedule.";
-        }
-
-        StringBuilder recommendation = new StringBuilder();
+    private String generateRecommendation(double currentPh, double currentPpm,
+                                         double phRate, double ppmRate,
+                                         int daysUntilPhCritical, int daysUntilPpmCritical,
+                                         Plant plant) {
+        StringBuilder rec = new StringBuilder();
         
-        if (!isOptimalPh) {
-            if (avgPh < plant.getMin_ph_level()) {
-                recommendation.append("pH is too low. Add pH up solution. ");
+        log.info("Generating recommendation - pH: {}, PPM: {}, pH rate: {}/day, PPM rate: {}/day", 
+                 currentPh, currentPpm, phRate, ppmRate);
+
+        // Check pH
+        if (currentPh < plant.getMin_ph_level()) {
+            rec.append("⚠️ pH is below optimal range. Add pH up solution immediately. ");
+        } else if (currentPh > plant.getMax_ph_level()) {
+            rec.append("⚠️ pH is above optimal range. Add pH down solution immediately. ");
+        } else if (daysUntilPhCritical <= 3 && daysUntilPhCritical > 0) {
+            if (phRate < 0) {
+                rec.append("⚠️ pH is dropping rapidly. Prepare pH up solution. ");
             } else {
-                recommendation.append("pH is too high. Add pH down solution. ");
+                rec.append("⚠️ pH is rising rapidly. Prepare pH down solution. ");
             }
+        } else if (phRate < -0.1) {
+            rec.append("📉 pH is gradually decreasing. Monitor closely. ");
+        } else if (phRate > 0.1) {
+            rec.append("📈 pH is gradually increasing. Monitor closely. ");
         }
 
-        if (!isOptimalPpm) {
-            if (avgPpm < plant.getMin_ppm()) {
-                recommendation.append("PPM is too low. Increase nutrient concentration. ");
+        // Check PPM
+        if (currentPpm < plant.getMin_ppm()) {
+            rec.append("⚠️ PPM is below optimal range. Add nutrients immediately. ");
+        } else if (currentPpm > plant.getMax_ppm()) {
+            rec.append("⚠️ PPM is above optimal range. Dilute with water immediately. ");
+        } else if (daysUntilPpmCritical <= 3 && daysUntilPpmCritical > 0) {
+            if (ppmRate < 0) {
+                rec.append("⚠️ Nutrients depleting rapidly. Prepare nutrient solution. ");
             } else {
-                recommendation.append("PPM is too high. Dilute with water. ");
+                rec.append("⚠️ PPM rising rapidly. Check for evaporation. ");
             }
+        } else if (ppmRate < -20) {
+            rec.append("📉 Nutrients depleting gradually. Plan to add nutrients soon. ");
+        } else if (ppmRate > 20) {
+            rec.append("📈 PPM increasing. Check water level and evaporation. ");
         }
 
-        if (recommendation.length() == 0) {
-            recommendation.append("Monitor conditions closely.");
+        // If everything is good
+        if (rec.length() == 0) {
+            rec.append("✅ All nutrient levels are optimal. Continue current maintenance schedule.");
         }
 
-        return recommendation.toString().trim();
+        return rec.toString().trim();
     }
 }

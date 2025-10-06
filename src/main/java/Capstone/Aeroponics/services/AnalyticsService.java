@@ -76,17 +76,17 @@ public class AnalyticsService {
         // Calculate days until critical
         int daysUntilPhCritical = calculateDaysUntilCritical(
             currentPh, phDepletionRate, 
-            plant.getMin_ph_level(), plant.getMax_ph_level()
+            plant.getMin_ph_level().doubleValue(), plant.getMax_ph_level().doubleValue()
         );
         
         int daysUntilPpmCritical = calculateDaysUntilCritical(
             currentPpm, ppmDepletionRate,
-            plant.getMin_ppm(), plant.getMax_ppm()
+            (double) plant.getMin_ppm(), (double) plant.getMax_ppm()
         );
 
         // Determine status
-        String phStatus = determineStatus(currentPh, plant.getMin_ph_level(), plant.getMax_ph_level(), daysUntilPhCritical);
-        String ppmStatus = determineStatus(currentPpm, plant.getMin_ppm(), plant.getMax_ppm(), daysUntilPpmCritical);
+        String phStatus = determineStatus(currentPh, plant.getMin_ph_level().doubleValue(), plant.getMax_ph_level().doubleValue(), daysUntilPhCritical);
+        String ppmStatus = determineStatus(currentPpm, (double) plant.getMin_ppm(), (double) plant.getMax_ppm(), daysUntilPpmCritical);
         String overallStatus = determineOverallStatus(phStatus, ppmStatus);
 
         // Calculate average changes
@@ -107,10 +107,10 @@ public class AnalyticsService {
                 .plantName(plant.getName())
                 .currentPh(Math.round(currentPh * 10.0) / 10.0)
                 .currentPpm(Math.round(currentPpm * 10.0) / 10.0)
-                .optimalPhMin(plant.getMin_ph_level())
-                .optimalPhMax(plant.getMax_ph_level())
-                .optimalPpmMin(plant.getMin_ppm())
-                .optimalPpmMax(plant.getMax_ppm())
+                .optimalPhMin(plant.getMin_ph_level().doubleValue())
+                .optimalPhMax(plant.getMax_ph_level().doubleValue())
+                .optimalPpmMin((double) plant.getMin_ppm())
+                .optimalPpmMax((double) plant.getMax_ppm())
                 .phDepletionRate(Math.round(phDepletionRate * 100.0) / 100.0)
                 .ppmDepletionRate(Math.round(ppmDepletionRate * 10.0) / 10.0)
                 .daysUntilPhCritical(daysUntilPhCritical)
@@ -135,10 +135,10 @@ public class AnalyticsService {
                 .plantName(plant.getName())
                 .currentPh(0)
                 .currentPpm(0)
-                .optimalPhMin(plant.getMin_ph_level())
-                .optimalPhMax(plant.getMax_ph_level())
-                .optimalPpmMin(plant.getMin_ppm())
-                .optimalPpmMax(plant.getMax_ppm())
+                .optimalPhMin(plant.getMin_ph_level().doubleValue())
+                .optimalPhMax(plant.getMax_ph_level().doubleValue())
+                .optimalPpmMin((double) plant.getMin_ppm())
+                .optimalPpmMax((double) plant.getMax_ppm())
                 .phDepletionRate(0)
                 .ppmDepletionRate(0)
                 .daysUntilPhCritical(999)
@@ -301,9 +301,9 @@ public class AnalyticsService {
                  currentPh, currentPpm, phRate, ppmRate);
 
         // Check pH
-        if (currentPh < plant.getMin_ph_level()) {
+        if (currentPh < plant.getMin_ph_level().doubleValue()) {
             rec.append("⚠️ pH is below optimal range. Add pH up solution immediately. ");
-        } else if (currentPh > plant.getMax_ph_level()) {
+        } else if (currentPh > plant.getMax_ph_level().doubleValue()) {
             rec.append("⚠️ pH is above optimal range. Add pH down solution immediately. ");
         } else if (daysUntilPhCritical <= 3 && daysUntilPhCritical > 0) {
             if (phRate < 0) {

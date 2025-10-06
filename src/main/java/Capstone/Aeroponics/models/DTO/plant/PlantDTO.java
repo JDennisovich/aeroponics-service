@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @Builder
@@ -19,8 +21,8 @@ public class PlantDTO {
     @Id
     private long id;
     private String name;
-    private int min_ph_level;
-    private int max_ph_level;
+    private BigDecimal min_ph_level;
+    private BigDecimal max_ph_level;
     private int min_ppm;
     private int max_ppm;
 

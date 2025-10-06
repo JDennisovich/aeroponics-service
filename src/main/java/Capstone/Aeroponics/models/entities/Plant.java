@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -29,10 +31,10 @@ public class Plant {
     private String name;
 
     @Column(name = "min_ph_level", nullable = false)
-    private int min_ph_level;
+    private BigDecimal min_ph_level;
 
     @Column(name = "max_ph_level", nullable = false)
-    private int max_ph_level;
+    private BigDecimal max_ph_level;
 
     @Column(name = "min_ppm", nullable = false)
     private int min_ppm;

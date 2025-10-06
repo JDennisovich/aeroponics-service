@@ -4,16 +4,18 @@ import Capstone.Aeroponics.models.entities.Plant;
 import Capstone.Aeroponics.models.entities.User;
 import jakarta.validation.constraints.NotBlank;
 
+import java.math.BigDecimal;
+
 public record PlantRO(
     int id,
     @NotBlank(message = "Name is mandatory") String name,
-    @NotBlank(message = "Minimum pH level is mandatory") int min_ph_level,
-    @NotBlank(message = "Max pH level is mandatory") int max_ph_level,
+    @NotBlank(message = "Minimum pH level is mandatory") BigDecimal min_ph_level,
+    @NotBlank(message = "Max pH level is mandatory") BigDecimal max_ph_level,
     @NotBlank(message = "Minimum ppm is mandatory") int min_ppm, // Updated field name
     @NotBlank(message = "Max ppm is mandatory") int max_ppm
 
 ) {
-    public Plant toEntity(Plant plant,User user) {
+    public Plant toEntity(Plant plant, User user) {
         if (plant == null) {
             plant = new Plant();
         }

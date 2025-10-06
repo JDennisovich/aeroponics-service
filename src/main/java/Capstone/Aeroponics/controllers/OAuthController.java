@@ -1,6 +1,10 @@
 package Capstone.Aeroponics.controllers;
 
 import Capstone.Aeroponics.models.request.UserRO;
+import Capstone.Aeroponics.models.request.SendOtpRequest;
+import Capstone.Aeroponics.models.request.VerifyOtpAndRegisterRequest;
+import Capstone.Aeroponics.models.request.ChangePasswordOtpRequest;
+import Capstone.Aeroponics.models.request.VerifyChangePasswordOtpRequest;
 import Capstone.Aeroponics.models.response.OAuthResponse;
 import Capstone.Aeroponics.services.OAuthService;
 import Capstone.Aeroponics.utils.ResponseUtils;
@@ -56,6 +60,93 @@ public class OAuthController {
 
         try {
             return ResponseEntity.ok(oAuthService.registerUser(userRO));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+        }
+    }
+
+    @PostMapping(value = "/send-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> sendOtp(@Valid @RequestBody SendOtpRequest sendOtpRequest,
+                                    BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            List<String> errorMessage = bindingResult.getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        try {
+            String message = oAuthService.sendRegistrationOtp(sendOtpRequest.email());
+            return ResponseEntity.ok(ResponseUtils.buildSuccessResponse(HttpStatus.OK, message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+        }
+    }
+
+    @PostMapping(value = "/verify-otp-register", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> verifyOtpAndRegister(@Valid @RequestBody VerifyOtpAndRegisterRequest request,
+                                                 BindingResult bindingResult,
+                                                 HttpServletResponse httpServletResponse) {
+
+        if (bindingResult.hasErrors()) {
+            List<String> errorMessage = bindingResult.getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        try {
+            UserRO userRO = request.toUserRO();
+            OAuthResponse response = oAuthService.verifyOtpAndRegisterUser(userRO, request.otpCode());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+        }
+    }
+
+    @PostMapping(value = "/change-password-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> sendChangePasswordOtp(@Valid @RequestBody ChangePasswordOtpRequest request,
+                                                 BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            List<String> errorMessage = bindingResult.getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        try {
+            String message = oAuthService.sendChangePasswordOtp(request.email());
+            return ResponseEntity.ok(ResponseUtils.buildSuccessResponse(HttpStatus.OK, message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
+        }
+    }
+
+    @PostMapping(value = "/verify-change-password-otp", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> verifyChangePasswordOtp(@Valid @RequestBody VerifyChangePasswordOtpRequest request,
+                                                    BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            List<String> errorMessage = bindingResult.getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
+
+        try {
+            String message = oAuthService.verifyOtpAndChangePassword(
+                request.email(), 
+                request.newPassword(), 
+                request.confirmPassword(), 
+                request.otpCode()
+            );
+            return ResponseEntity.ok(ResponseUtils.buildSuccessResponse(HttpStatus.OK, message));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, e.getLocalizedMessage()));
         }

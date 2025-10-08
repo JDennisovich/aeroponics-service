@@ -224,7 +224,7 @@ public class TowerService {
             Tower savedTower = towerRepository.save(tower);
             
             // Auto-assign a FREE device to this tower
-            Device freeDevice = deviceService.findFreeDevice();
+            Device freeDevice = deviceService.findFreeDeviceEntity();
             if (freeDevice == null) {
                 throw new ServiceException("No available devices to assign to tower");
             }
@@ -232,7 +232,6 @@ public class TowerService {
             // Assign device and link to the SAVED tower
             freeDevice.setTower(savedTower);
             deviceService.assignDevice(freeDevice);
-            
             log.info("Assigned device {} to tower {}", freeDevice.getMacAddress(), savedTower.getName());
 
         } catch (Exception e) {
@@ -295,10 +294,14 @@ public class TowerService {
                 throw new ResourceNotFoundException(TOWER + " not found");
             }
 
+            // Unassign all devices from this tower before deleting
+            deviceService.unassignDevicesFromTower(tower);
+            
             towerRepository.delete(tower);
+            log.info(TOWER + " deleted successfully with id: " + id);
         } catch (Exception e) {
-            String errorMessage = MessageUtils.saveErrorMessage(TOWER);
-            log.error(errorMessage);
+            String errorMessage = MessageUtils.deleteErrorMessage(TOWER);
+            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }

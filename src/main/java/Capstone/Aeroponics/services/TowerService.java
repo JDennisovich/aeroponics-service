@@ -253,7 +253,7 @@ public class TowerService {
             // ✅ Create updated tower with the existing ID
             Tower tower = towerRO.toEntity(null);
             tower.setId(id); // Set the ID for update
-            tower.setStatus(true); // Ensure status is set
+            // Status is already set from towerRO.toEntity(), don't override it
 
             // ✅ Handle schedules (same logic as save method)
             if (towerRO.schedules() != null) {

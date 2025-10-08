@@ -103,7 +103,17 @@ public class UserService implements UserDetailsService{
                 throw new ServiceException(errorMessage);
             }
 
+            // Check if email already exists
+            Optional<User> existingUser = userRepository.findByEmail(userRO.email());
+            if (existingUser.isPresent()) {
+                String errorMessage = "An account with this email already exists";
+                log.error(errorMessage);
+                throw new ServiceException(errorMessage);
+            }
+
             userRepository.save(userRO.toEntity(null));
+        } catch (ServiceException e) {
+            throw e;
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(USER);
             log.error(errorMessage, e);

@@ -3,6 +3,7 @@ package Capstone.Aeroponics.exception.handler;
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
 import Capstone.Aeroponics.exception.ServiceException;
 import Capstone.Aeroponics.utils.ResponseUtils;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -15,6 +16,17 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        String message = "An account with this email already exists";
+        if (e.getMessage() != null && e.getMessage().contains("email")) {
+            message = "An account with this email already exists";
+        }
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ResponseUtils.buildErrorResponse(HttpStatus.BAD_REQUEST, message));
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {

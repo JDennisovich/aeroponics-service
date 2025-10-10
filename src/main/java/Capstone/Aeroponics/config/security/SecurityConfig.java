@@ -71,18 +71,25 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher("/api/user") //TODO: add "/api/tower" if need for testing
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(withDefaults())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/api/plant").permitAll()
-//                        .requestMatchers(HttpMethod.POST, "/api/tower").permitAll() TODO: Remove comment
-//                        .requestMatchers(HttpMethod.GET, "/api/tower").permitAll()
-//                        .requestMatchers(HttpMethod.DELETE, "/api/tower/*").permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/api/tower/user/*").permitAll()
-                        .anyRequest().authenticated()
+        .securityMatcher("/api/user", "/api/tower/*", "/api/tower", "/api/nutrient","/api/tower/device/*","/api/devices/**","/api/devices/*", "/api/devices/register") //TODO: add "/api/tower" if need for testing
+        .csrf(AbstractHttpConfigurer::disable)
+        .cors(withDefaults())
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, "/api/user").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/plant").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/tower").permitAll() //TODO: Remove comment
+                .requestMatchers(HttpMethod.GET, "/api/tower").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/tower/*").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/tower/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/nutrient").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tower/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tower/user/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/devices/register").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/devices/register").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/devices/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tower/device/*").permitAll()
+                .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(this::handleAuthException))

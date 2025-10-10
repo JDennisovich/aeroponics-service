@@ -96,6 +96,21 @@ public class DeviceService {
         }
     }
 
+    // Get all free devices (returns list of DTOs for controller)
+    public List<DeviceDTO> getAllFreeDevices() {
+        try {
+            List<Device> devices = deviceRepository.findAllByStatus(DeviceStatus.FREE);
+            log.info("Found " + devices.size() + " free " + DEVICES);
+            return devices.stream()
+                    .map(DeviceDTO::new)
+                    .toList();
+        } catch (Exception e) {
+            String errorMessage = "Error while finding free " + DEVICES;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
     // Unassign devices from a tower (set status to FREE and remove tower reference)
     public void unassignDevicesFromTower(Tower tower) {
         try {

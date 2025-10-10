@@ -40,4 +40,16 @@ public class DeviceController {
             )
         );
     }
+
+    // Get all free devices
+    @GetMapping("/free/all")
+    public ResponseEntity<?> getAllFreeDevices() {
+        return ResponseEntity.ok(
+            ResponseUtils.buildSuccessResponse(
+                HttpStatus.OK,
+                MessageUtils.retrieveSuccessMessage(deviceService.DEVICES),
+                deviceService.getAllFreeDevices()
+            )
+        );
+    }
 }

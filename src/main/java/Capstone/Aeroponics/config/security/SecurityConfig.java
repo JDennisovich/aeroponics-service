@@ -146,6 +146,25 @@ public class SecurityConfig {
     .build();
     }
 
+    @Order(6)
+    @Bean
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
+    throws Exception {
+    return http
+    .csrf(AbstractHttpConfigurer::disable)
+    .cors(withDefaults())
+    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()))
+    .exceptionHandling(ex -> {
+        ex.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint());
+        ex.accessDeniedHandler(new BearerTokenAccessDeniedHandler());
+    })
+    .addFilterBefore(new JwtAccessTokenFilter(rsaKeyRecord, jwtTokenUtils),
+    UsernamePasswordAuthenticationFilter.class)
+    .build();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

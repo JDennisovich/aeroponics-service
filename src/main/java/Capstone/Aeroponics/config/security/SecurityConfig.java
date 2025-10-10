@@ -5,7 +5,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -71,7 +70,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain publicSaveUserSecurityFilterChain(HttpSecurity http) throws Exception {
         return http
-        .securityMatcher("/api/user", "/api/tower/*", "/api/tower", "/api/nutrient","/api/tower/device/*","/api/devices/**","/api/devices/*", "/api/devices/register") //TODO: add "/api/tower" if need for testing
+        .securityMatcher("/api/user", "/api/tower/*", "/api/tower", "/api/tower/*/assign-device/*", "/api/nutrient","/api/tower/device/*","/api/devices/**","/api/devices/*", "/api/devices/register") //TODO: add "/api/tower" if need for testing
         .csrf(AbstractHttpConfigurer::disable)
         .cors(withDefaults())
         .authorizeHttpRequests(auth -> auth
@@ -79,15 +78,20 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/plant").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/tower").permitAll() //TODO: Remove comment
-                .requestMatchers(HttpMethod.GET, "/api/tower").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/tower/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/tower/*/assign-device/*").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/tower/*").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/tower/*").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/nutrient").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/nutrient").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tower/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tower/*/device").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tower/user/*").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/devices/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/devices/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/devices/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/devices/mac/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/devices/free/all").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/tower/device/*").permitAll()
                 .anyRequest().authenticated()
                 )

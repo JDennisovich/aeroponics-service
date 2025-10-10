@@ -47,8 +47,32 @@ public class DeviceController {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.retrieveSuccessMessage(deviceService.DEVICES),
+                MessageUtils.retrieveSuccessMessage(DeviceService.DEVICES),
                 deviceService.getAllFreeDevices()
+            )
+        );
+    }
+
+    // Get device by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getDeviceById(@PathVariable Long id) {
+        return ResponseEntity.ok(
+            ResponseUtils.buildSuccessResponse(
+                HttpStatus.OK,
+                MessageUtils.retrieveSuccessMessage(DeviceService.DEVICE),
+                deviceService.getDeviceById(id)
+            )
+        );
+    }
+
+    // Get device by MAC address (for Arduino)
+    @GetMapping("/mac/{macAddress}")
+    public ResponseEntity<?> getDeviceByMacAddress(@PathVariable String macAddress) {
+        return ResponseEntity.ok(
+            ResponseUtils.buildSuccessResponse(
+                HttpStatus.OK,
+                MessageUtils.retrieveSuccessMessage(DeviceService.DEVICE),
+                deviceService.getDeviceByMacAddress(macAddress)
             )
         );
     }

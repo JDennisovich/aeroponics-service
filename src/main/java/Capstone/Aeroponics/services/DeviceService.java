@@ -127,4 +127,68 @@ public class DeviceService {
             throw new ServiceException(errorMessage, e);
         }
     }
+
+    // Get device by ID (returns DTO for controller)
+    public DeviceDTO getDeviceById(Long id) {
+        try {
+            Device device = deviceRepository.findById(id)
+                    .orElseThrow(() -> new ServiceException(DEVICE + " not found with id: " + id));
+            log.info(DEVICE + " found with id: " + id);
+            return new DeviceDTO(device);
+        } catch (Exception e) {
+            String errorMessage = "Error while finding " + DEVICE + " with id: " + id;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    // Get device by MAC address (for Arduino)
+    public DeviceDTO getDeviceByMacAddress(String macAddress) {
+        try {
+            Device device = deviceRepository.findByMacAddress(macAddress)
+                    .orElseThrow(() -> new ServiceException(DEVICE + " not found with MAC: " + macAddress));
+            log.info(DEVICE + " found with MAC: " + macAddress);
+            return new DeviceDTO(device);
+        } catch (Exception e) {
+            String errorMessage = "Error while finding " + DEVICE + " with MAC: " + macAddress;
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    // Get all devices assigned to a tower (returns list of DTOs)
+    public List<DeviceDTO> getDevicesByTower(Tower tower) {
+        try {
+            List<Device> devices = deviceRepository.findByTower(tower);
+            log.info("Found {} device(s) for tower: {}", devices.size(), tower.getName());
+            return devices.stream()
+                    .map(DeviceDTO::new)
+                    .toList();
+        } catch (Exception e) {
+            String errorMessage = "Error while finding devices for tower";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    // Assign a specific device to a tower
+    public void assignDeviceToTower(Long deviceId, Tower tower) {
+        try {
+            Device device = deviceRepository.findById(deviceId)
+                    .orElseThrow(() -> new ServiceException(DEVICE + " not found with id: " + deviceId));
+            
+            if (device.getStatus() != DeviceStatus.FREE) {
+                throw new ServiceException(DEVICE + " is not available (already assigned)");
+            }
+            
+            device.setTower(tower);
+            device.setStatus(DeviceStatus.ASSIGNED);
+            deviceRepository.save(device);
+            log.info(DEVICE + " {} assigned to tower {}", device.getMacAddress(), tower.getName());
+        } catch (Exception e) {
+            String errorMessage = "Error assigning " + DEVICE + " to tower";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
 }

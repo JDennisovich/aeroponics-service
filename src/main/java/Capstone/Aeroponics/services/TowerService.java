@@ -1,14 +1,13 @@
 package Capstone.Aeroponics.services;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import Capstone.Aeroponics.models.DTO.device.DeviceDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
 import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
 import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
-import Capstone.Aeroponics.models.entities.Device;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Schedule;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
@@ -192,7 +191,7 @@ public class TowerService {
         }
     }
 
-    public void save(TowerRO towerRO) {
+    public Tower save(TowerRO towerRO) {
         try {
             // Convert RO → Entity
             Tower tower = towerRO.toEntity(null);
@@ -220,19 +219,10 @@ public class TowerService {
                 );
             }
 
-            // Save tower with schedules FIRST
+            // Save tower with schedules (device will be assigned later)
             Tower savedTower = towerRepository.save(tower);
-            
-            // Auto-assign a FREE device to this tower
-            Device freeDevice = deviceService.findFreeDeviceEntity();
-            if (freeDevice == null) {
-                throw new ServiceException("No available devices to assign to tower");
-            }
-            
-            // Assign device and link to the SAVED tower
-            freeDevice.setTower(savedTower);
-            deviceService.assignDevice(freeDevice);
-            log.info("Assigned device {} to tower {}", freeDevice.getMacAddress(), savedTower.getName());
+            log.info("Tower created successfully: {} with ID: {}", savedTower.getName(), savedTower.getId());
+            return savedTower;
 
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);
@@ -302,6 +292,56 @@ public class TowerService {
         } catch (Exception e) {
             String errorMessage = MessageUtils.deleteErrorMessage(TOWER);
             log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    // Assign a device to a tower
+    public void assignDeviceToTower(Long towerId, Long deviceId) {
+        try {
+            Tower tower = getTowerById(towerId);
+            if (tower == null) {
+                throw new ResourceNotFoundException("Tower not found with id: " + towerId);
+            }
+
+            deviceService.assignDeviceToTower(deviceId, tower);
+            log.info("Device {} assigned to tower {}", deviceId, tower.getName());
+        } catch (Exception e) {
+            String errorMessage = "Error assigning device to tower";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    // Get device assigned to a tower
+    public List<DeviceDTO> getDeviceByTowerId(Long towerId) {
+        try {
+            log.info("Attempting to retrieve devices for tower ID: {}", towerId);
+            
+            Tower tower = getTowerById(towerId);
+            if (tower == null) {
+                log.error("Tower not found with id: {}", towerId);
+                throw new ResourceNotFoundException("Tower not found with id: " + towerId);
+            }
+            
+            log.info("Tower found: {}, fetching devices...", tower.getName());
+
+            // Get devices assigned to this tower through DeviceService
+            List<DeviceDTO> devices = deviceService.getDevicesByTower(tower);
+            
+            if (devices.isEmpty()) {
+                log.info("No devices assigned to tower {}", tower.getName());
+            } else {
+                log.info("Found {} device(s) for tower {}", devices.size(), tower.getName());
+            }
+            
+            return devices;
+        } catch (ResourceNotFoundException e) {
+            log.error("Tower not found: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            String errorMessage = "Error retrieving devices for tower " + towerId;
+            log.error(errorMessage + ": " + e.getClass().getName() + " - " + e.getMessage(), e);
             throw new ServiceException(errorMessage, e);
         }
     }

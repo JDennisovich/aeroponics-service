@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
+import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.request.TowerRO;
 import Capstone.Aeroponics.services.TowerService;
 import Capstone.Aeroponics.utils.MessageUtils;
@@ -81,11 +83,12 @@ public class TowerController {
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody TowerRO towerRO) {
-        towerService.save(towerRO);
+        Tower savedTower = towerService.save(towerRO);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
-                MessageUtils.saveSuccessMessage(towerService.TOWER)
+                MessageUtils.saveSuccessMessage(TowerService.TOWER),
+                new TowerDTO(savedTower)
             )
         );
     }
@@ -110,5 +113,37 @@ public class TowerController {
                 MessageUtils.deleteSuccessMessage(towerService.TOWER)
             )
         );
+    }
+
+    // Assign a device to a tower
+    @PostMapping("/{towerId}/assign-device/{deviceId}")
+    public ResponseEntity<?> assignDevice(@PathVariable Long towerId, @PathVariable Long deviceId) {
+        towerService.assignDeviceToTower(towerId, deviceId);
+        return ResponseEntity.ok(
+            ResponseUtils.buildSuccessResponse(
+                HttpStatus.OK,
+                "Device assigned to tower successfully"
+            )
+        );
+    }
+
+    // Get device assigned to a tower
+    @GetMapping("/{towerId}/device")
+    public ResponseEntity<?> getDeviceByTowerId(@PathVariable Long towerId) {
+        try {
+            return ResponseEntity.ok(
+                ResponseUtils.buildSuccessResponse(
+                    HttpStatus.OK,
+                    "Successfully retrieved device for tower",
+                    towerService.getDeviceByTowerId(towerId)
+                )
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ResponseUtils.buildErrorResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error retrieving devices: " + e.getMessage()
+                ));
+        }
     }
 }

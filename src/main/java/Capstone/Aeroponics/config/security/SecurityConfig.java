@@ -159,6 +159,19 @@ public class SecurityConfig {
 
     @Order(6)
     @Bean
+    public SecurityFilterChain otpSecurityFilterChain(HttpSecurity http)
+    throws Exception {
+    return http
+    .securityMatcher("/oauth/send-otp/**", "/oauth/verify-otp-register/**", "/oauth/change-password-otp/**", "/oauth/verify-change-password-otp/**")
+    .csrf(AbstractHttpConfigurer::disable)
+    .cors(withDefaults())
+    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    .build();
+    }
+
+    @Order(7)
+    @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http)
     throws Exception {
     return http

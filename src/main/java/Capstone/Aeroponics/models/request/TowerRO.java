@@ -8,7 +8,6 @@ import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -18,7 +17,6 @@ public record TowerRO(
         @NotNull(message = "User is mandatory") User user,
         @NotNull(message = "Plant is mandatory") Plant plant,
         @NotNull(message = "Name is mandatory") String name,
-        @NotNull(message = "Time is mandatory") LocalTime time,
         @NotNull(message = "Water level is mandatory") WaterLevel water_level,
         @NotNull(message = "Frequency is mandatory") int frequency,
         @NotNull(message = "Start date is mandatory") LocalDate start_date,

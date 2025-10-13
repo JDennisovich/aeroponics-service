@@ -28,7 +28,7 @@ public class Tower {
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
 
-    @OneToMany(mappedBy = "tower", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "tower", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Schedule> schedules;
 

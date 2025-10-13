@@ -212,6 +212,7 @@ public class TowerService {
                         towerRO.schedules().stream()
                                 .map(scheduleRO -> {
                                     Schedule schedule = scheduleRO.toEntity(null);
+                                    schedule.setId(null); // Force INSERT, not UPDATE
                                     schedule.setTower(tower);
                                     return schedule;
                                 })
@@ -231,21 +232,27 @@ public class TowerService {
         }
     }
 
-
-
     public void update(Long id, TowerRO towerRO) {
         try {
-            // ✅ Check if tower exists
-            if (!towerRepository.existsById(id)) {
+            // ✅ Fetch existing tower with schedules
+            Tower existingTower = getTowerById(id);
+            if (existingTower == null) {
                 throw new ResourceNotFoundException(TOWER + " not found");
             }
 
-            // ✅ Create updated tower with the existing ID
-            Tower tower = towerRO.toEntity(null);
-            tower.setId(id); // Set the ID for update
-            // Status is already set from towerRO.toEntity(), don't override it
+            // ✅ Update tower fields
+            existingTower.setName(towerRO.name());
+            existingTower.setUser(towerRO.user());
+            existingTower.setPlant(towerRO.plant());
+            existingTower.setWaterLevel(towerRO.water_level());
+            existingTower.setFrequency(towerRO.frequency());
+            existingTower.setStart_date(towerRO.start_date());
+            existingTower.setEnd_date(towerRO.end_date());
+            if (towerRO.status() != null) {
+                existingTower.setStatus(towerRO.status());
+            }
 
-            // ✅ Handle schedules (same logic as save method)
+            // ✅ Handle schedules - update existing ones by index, preserving IDs
             if (towerRO.schedules() != null) {
                 int scheduleCount = towerRO.schedules().size();
                 if (scheduleCount != towerRO.frequency()) {
@@ -255,19 +262,20 @@ public class TowerService {
                     );
                 }
 
-                List<Schedule> schedules = towerRO.schedules().stream()
-                        .map(scheduleRO -> {
-                            Schedule schedule = scheduleRO.toEntity(null);
-                            schedule.setTower(tower);
-                            return schedule;
-                        })
-                        .toList();
-
-                tower.setSchedules(schedules);
+                List<Schedule> existingSchedules = existingTower.getSchedules();
+                
+                // Update existing schedules in place - only update start_time, preserve ID
+                if (existingSchedules != null && !existingSchedules.isEmpty()) {
+                    for (int i = 0; i < towerRO.schedules().size() && i < existingSchedules.size(); i++) {
+                        Schedule existingSchedule = existingSchedules.get(i);
+                        // Only update the start_time, keep the existing ID and tower reference
+                        existingSchedule.setStart_time(towerRO.schedules().get(i).start_time());
+                    }
+                }
             }
 
-            // ✅ Save (JPA will handle update because ID exists)
-            towerRepository.save(tower);
+            // ✅ Save (JPA will handle update)
+            towerRepository.save(existingTower);
 
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);

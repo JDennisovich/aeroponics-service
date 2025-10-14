@@ -79,6 +79,41 @@ public class FileService {
         }
     }
 
+    /**
+     * Delete file from the file system.
+     *
+     * @param fileUrl the URL of the file to delete
+     */
+    public void deleteFile(String fileUrl) {
+        try {
+            if (fileUrl == null || fileUrl.isEmpty()) {
+                log.warn("No file URL provided for deletion");
+                return;
+            }
+
+            // Extract filename from URL
+            String fileName = fileUrl.replace(imageBaseUrl, "");
+            Path filePath = Paths.get(imageDirectory, fileName);
+
+            // Delete file if it exists
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                log.info("File deleted successfully: {}", fileName);
+            } else {
+                log.warn("File not found for deletion: {}", fileName);
+            }
+
+        } catch (IOException e) {
+            String errorMessage = "Failed to delete file due to I/O error";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        } catch (Exception e) {
+            String errorMessage = "Unexpected error occurred while deleting file";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
     public Path getImage(String imageName) {
         try {
             log.info(MessageUtils.retrieveSuccessMessage(imageName));

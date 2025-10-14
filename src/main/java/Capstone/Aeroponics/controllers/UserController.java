@@ -2,9 +2,9 @@ package Capstone.Aeroponics.controllers;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,10 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import Capstone.Aeroponics.exception.ServiceException;
-import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.request.UserRO;
-import Capstone.Aeroponics.repositories.UserRepository;
-import Capstone.Aeroponics.services.FileService;
 import Capstone.Aeroponics.services.UserService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
@@ -35,12 +32,6 @@ public class UserController {
 
     private final UserService userServices;
 
-    @Autowired
-    private FileService fileService;
-
-    @Autowired
-    private UserRepository userRepository;
-
     @GetMapping
     public ResponseEntity<?> getAll() {
         return ResponseEntity.ok(
@@ -52,7 +43,7 @@ public class UserController {
         );
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     public ResponseEntity<?> getByid(@PathVariable int id) {
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
@@ -111,14 +102,7 @@ public class UserController {
             @RequestParam("file") MultipartFile file,
             HttpServletRequest request) {
         try {
-            // Upload file and get URL
-            String fileUrl = fileService.uploadFile(file);
-            
-            // Get current user and update profile picture
-            User user = userServices.getUserProfile(request);
-            user.setProfilePictureUrl(fileUrl);
-            userRepository.save(user);
-            
+            String fileUrl = userServices.uploadProfilePicture(file, request);
             return ResponseEntity.ok(
                 ResponseUtils.buildSuccessResponse(
                     HttpStatus.OK,
@@ -138,6 +122,39 @@ public class UserController {
                 ResponseUtils.buildErrorResponse(
                     HttpStatus.INTERNAL_SERVER_ERROR,
                     "Failed to upload profile picture: " + e.getMessage()
+                )
+            );
+        }
+    }
+
+    @GetMapping("/profile-picture")
+    public ResponseEntity<?> getProfilePicture(HttpServletRequest request) {
+        try {
+            UserService.FileData file = userServices.getProfilePictureFile(request);
+            if (file == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    ResponseUtils.buildErrorResponse(
+                        HttpStatus.NOT_FOUND,
+                        "Profile picture not set or not found"
+                    )
+                );
+            }
+            return ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.parseMediaType(file.contentType != null ? file.contentType : MediaType.APPLICATION_OCTET_STREAM_VALUE))
+                .body(file.bytes);
+        } catch (ServiceException e) {
+            return ResponseEntity.badRequest().body(
+                ResponseUtils.buildErrorResponse(
+                    HttpStatus.BAD_REQUEST,
+                    e.getMessage()
+                )
+            );
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ResponseUtils.buildErrorResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Failed to fetch profile picture: " + e.getMessage()
                 )
             );
         }

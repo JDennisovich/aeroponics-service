@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import Capstone.Aeroponics.config.security.UserInfoDetails;
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
@@ -47,6 +48,9 @@ public class UserService implements UserDetailsService{
 
     @Autowired
     private JwtTokenUtils jwtTokenUtils;
+
+    @Autowired
+    private FileService fileService;
 
     public List<User> getall() {
         try {
@@ -214,6 +218,72 @@ public class UserService implements UserDetailsService{
         }
     }
 
+
+    /**
+     * Upload or replace the current user's profile picture and return the new file URL.
+     */
+    public String uploadProfilePicture(MultipartFile file, HttpServletRequest request) {
+        try {
+            User user = getUserProfile(request);
+            if (user == null) {
+                throw new ServiceException("User not found");
+            }
+
+            if (user.getProfilePictureUrl() != null && !user.getProfilePictureUrl().isEmpty()) {
+                fileService.deleteFile(user.getProfilePictureUrl());
+            }
+
+            String fileUrl = fileService.uploadFile(file);
+            user.setProfilePictureUrl(fileUrl);
+            userRepository.save(user);
+            return fileUrl;
+        } catch (ServiceException e) {
+            throw e;
+        } catch (Exception e) {
+            String errorMessage = "Failed to upload profile picture";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    /** Simple holder for file data and content type. */
+    public static class FileData {
+        public final byte[] bytes;
+        public final String contentType;
+        public FileData(byte[] bytes, String contentType) {
+            this.bytes = bytes;
+            this.contentType = contentType;
+        }
+    }
+
+    /**
+     * Load the current user's profile picture bytes and content type.
+     */
+    public FileData getProfilePictureFile(HttpServletRequest request) {
+        try {
+            User user = getUserProfile(request);
+            if (user == null || user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
+                return null;
+            }
+
+            String fileUrl = user.getProfilePictureUrl();
+            String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
+            var path = fileService.getImage(fileName);
+            if (path == null) {
+                return null;
+            }
+            var bytes = fileService.getImageByte(path);
+            if (bytes == null || bytes.length == 0) {
+                return null;
+            }
+            String contentType = fileService.getImageContentType(path);
+            return new FileData(bytes, contentType);
+        } catch (Exception e) {
+            String errorMessage = "Failed to load profile picture";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
 
 }
 

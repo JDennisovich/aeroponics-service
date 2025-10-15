@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import Capstone.Aeroponics.models.entities.User;
@@ -20,6 +21,7 @@ import Capstone.Aeroponics.repositories.UserRepository;
 	RSAKeyRecord.class,
 	JwtRecord.class
 })
+@EnableJpaAuditing
 @SpringBootApplication
 public class AeroponicsApplication {
 

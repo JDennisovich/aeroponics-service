@@ -244,7 +244,6 @@ public class TowerService {
             existingTower.setName(towerRO.name());
             existingTower.setUser(towerRO.user());
             existingTower.setPlant(towerRO.plant());
-            existingTower.setWaterLevel(towerRO.water_level());
             existingTower.setFrequency(towerRO.frequency());
             existingTower.setStart_date(towerRO.start_date());
             existingTower.setEnd_date(towerRO.end_date());

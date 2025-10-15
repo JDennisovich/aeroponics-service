@@ -28,7 +28,6 @@ public class TowerDTO {
     private List<ScheduleDTO> schedules; // ✅ include schedules
     private String name;
     private Boolean status;
-    private WaterLevel waterLevel;
     private int frequency;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -39,7 +38,6 @@ public class TowerDTO {
         this.plant = new PlantDTO(tower.getPlant());
         this.name = tower.getName();
         this.status = tower.getStatus();
-        this.waterLevel = tower.getWaterLevel();
         this.frequency = tower.getFrequency();
         this.startDate = tower.getStart_date();
         this.endDate = tower.getEnd_date();

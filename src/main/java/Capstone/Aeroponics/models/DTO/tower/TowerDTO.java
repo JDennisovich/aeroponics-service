@@ -31,6 +31,7 @@ public class TowerDTO {
     private int frequency;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Integer wateringDuration;
 
     public TowerDTO(Tower tower) {
         this.id = tower.getId();
@@ -41,6 +42,7 @@ public class TowerDTO {
         this.frequency = tower.getFrequency();
         this.startDate = tower.getStart_date();
         this.endDate = tower.getEnd_date();
+        this.wateringDuration = tower.getWatering_duration();
 
         if (tower.getSchedules() != null) {
             this.schedules = tower.getSchedules()

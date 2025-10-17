@@ -5,8 +5,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import Capstone.Aeroponics.models.DTO.device.DeviceDTO;
-import Capstone.Aeroponics.models.DTO.nutrient.NutrientPhLevelDTO;
-import Capstone.Aeroponics.models.DTO.nutrient.NutrientPpmDTO;
 import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Schedule;
@@ -111,82 +109,6 @@ public class TowerService {
         } catch (Exception e) {
             String errorMessage = "Error while getting " + TOWER;
             log.error(errorMessage);
-            throw new ServiceException(errorMessage, e);
-        }
-    }
-
-    public NutrientPhLevelDTO getTowerPhLevel(Long towerId) {
-        try {
-            Optional<Nutrient_log> nutrient = Nutrient_logRepository
-                    .findTopByTowerIdOrderByTimeDesc(towerId);
-
-            if (nutrient.isEmpty()) {
-                throw new Exception("No nutrient data found for tower " + towerId);
-            }
-
-            return new NutrientPhLevelDTO(nutrient.get());
-
-        } catch (Exception e) {
-            String errorMessage = "Error while getting pH level for tower " + towerId;
-            log.error(errorMessage, e);
-            throw new ServiceException(errorMessage, e);
-        }
-    }
-
-    public List<NutrientPhLevelDTO> getTowerPhLevels(Long towerId) {
-        try {
-            List<Nutrient_log> nutrientLogs = Nutrient_logRepository
-                    .findByTowerIdOrderByTimeDesc(towerId);
-
-            if (nutrientLogs.isEmpty()) {
-                throw new Exception("No nutrient data found for tower " + towerId);
-            }
-
-            return nutrientLogs.stream()
-                    .map(NutrientPhLevelDTO::new)
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            String errorMessage = "Error while getting pH levels for tower " + towerId;
-            log.error(errorMessage, e);
-            throw new ServiceException(errorMessage, e);
-        }
-    }
-
-    public NutrientPpmDTO getTowerPpm(Long towerId) {
-        try {
-            Optional<Nutrient_log> nutrient = Nutrient_logRepository
-                    .findTopByTowerIdOrderByTimeDesc(towerId);
-
-            if (nutrient.isEmpty()) {
-                throw new Exception("No nutrient data found for tower " + towerId);
-            }
-
-            return new NutrientPpmDTO(nutrient.get());
-
-        } catch (Exception e) {
-            String errorMessage = "Error while getting pH level for tower " + towerId;
-            log.error(errorMessage, e);
-            throw new ServiceException(errorMessage, e);
-        }
-    }
-
-    public List<NutrientPhLevelDTO> getTowerPpms(Long towerId) {
-        try {
-            List<Nutrient_log> nutrientLogs = Nutrient_logRepository
-                    .findByTowerIdOrderByTimeDesc(towerId);
-
-            if (nutrientLogs.isEmpty()) {
-                throw new Exception("No nutrient data found for tower " + towerId);
-            }
-
-            return nutrientLogs.stream()
-                    .map(NutrientPhLevelDTO::new)
-                    .collect(Collectors.toList());
-
-        } catch (Exception e) {
-            String errorMessage = "Error while getting pH levels for tower " + towerId;
-            log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }
     }

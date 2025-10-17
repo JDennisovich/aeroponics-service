@@ -19,6 +19,7 @@ public record TowerRO(
         @NotNull(message = "Frequency is mandatory") int frequency,
         @NotNull(message = "Start date is mandatory") LocalDate start_date,
         @NotNull(message = "End date is mandatory") LocalDate end_date,
+        @NotNull(message = "Watering duration is mandatory") Integer watering_duration,
         Boolean status, // Optional status field
         List<ScheduleRO> schedules // ✅ Nested schedules
 ) {
@@ -38,6 +39,7 @@ public record TowerRO(
         tower.setFrequency(frequency);
         tower.setStart_date(start_date);
         tower.setEnd_date(end_date);
+        tower.setWatering_duration(watering_duration);
 
         // ✅ Handle nested schedules safely
         if (schedules != null && !schedules.isEmpty()) {

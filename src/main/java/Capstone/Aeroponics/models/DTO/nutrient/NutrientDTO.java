@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -22,10 +22,11 @@ public class NutrientDTO {
     @Id
     private long id;
     private TowerInfo tower;
-    private LocalTime time;
+    private LocalDateTime time;
     private BigDecimal ph_level;
     private BigDecimal ppm;
     private WaterLevel water_level;
+    private BigDecimal water_temperature;
 
     public NutrientDTO(Nutrient_log nutrientLog) {
         this.id = nutrientLog.getId();
@@ -34,6 +35,7 @@ public class NutrientDTO {
         this.ph_level = nutrientLog.getPh_level();
         this.ppm = nutrientLog.getPpm();
         this.water_level = nutrientLog.getWater_level();
+        this.water_temperature = nutrientLog.getWater_temperature();
     }
 
     @Getter

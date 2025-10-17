@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -29,7 +29,7 @@ public class Nutrient_log {
     private Tower tower;
 
     @Column (name = "time", nullable = false)
-    private LocalTime time;
+    private LocalDateTime time;
 
     @Column (name = "ph_level", nullable = false)
     private BigDecimal ph_level;
@@ -40,4 +40,7 @@ public class Nutrient_log {
     @Enumerated(EnumType.STRING)
     @Column (name = "water_level", nullable = false)
     private WaterLevel water_level;
+
+    @Column (name = "water_temperature")
+    private BigDecimal water_temperature;
 }

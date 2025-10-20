@@ -64,6 +64,6 @@ public class Tower implements Serializable {
     private LocalDate end_date;
 
     @Column(name = "watering_duration", nullable = false)
-    private Integer watering_duration;
+    private int watering_duration;
 
 }

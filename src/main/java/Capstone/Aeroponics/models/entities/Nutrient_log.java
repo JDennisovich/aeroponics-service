@@ -1,6 +1,5 @@
 package Capstone.Aeroponics.models.entities;
 
-import Capstone.Aeroponics.models.enums.WaterLevel;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -37,9 +36,8 @@ public class Nutrient_log {
     @Column (name = "ppm", nullable = false)
     private BigDecimal ppm;
 
-    @Enumerated(EnumType.STRING)
     @Column (name = "water_level", nullable = false)
-    private WaterLevel water_level;
+    private int water_level;
 
     @Column (name = "water_temperature")
     private BigDecimal water_temperature;

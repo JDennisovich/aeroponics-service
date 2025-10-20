@@ -2,7 +2,6 @@ package Capstone.Aeroponics.models.request;
 
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Tower;
-import Capstone.Aeroponics.models.enums.WaterLevel;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,7 +16,7 @@ public record Nutrient_logsRO(
         LocalDateTime time,
         @NotNull(message = "PH level is mandatory") BigDecimal ph_level,
         @NotNull(message = "PPM is mandatory") BigDecimal ppm,
-        @NotNull(message = "Water Level is mandatory") WaterLevel water_level,
+        @NotNull(message = "Water Level is mandatory") Integer water_level,
         BigDecimal water_temperature
 ) {
     public record TowerRef(Long id) {}

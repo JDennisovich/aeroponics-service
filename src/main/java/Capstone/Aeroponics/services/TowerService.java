@@ -156,24 +156,25 @@ public class TowerService {
 
     public void update(Long id, TowerRO towerRO) {
         try {
-            // ✅ Fetch existing tower with schedules
+            // Fetch existing tower with schedules
             Tower existingTower = getTowerById(id);
             if (existingTower == null) {
                 throw new ResourceNotFoundException(TOWER + " not found");
             }
 
-            // ✅ Update tower fields
+            // Update tower fields
             existingTower.setName(towerRO.name());
             existingTower.setUser(towerRO.user());
             existingTower.setPlant(towerRO.plant());
             existingTower.setFrequency(towerRO.frequency());
             existingTower.setStart_date(towerRO.start_date());
             existingTower.setEnd_date(towerRO.end_date());
+            existingTower.setWatering_duration(towerRO.watering_duration());
             if (towerRO.status() != null) {
                 existingTower.setStatus(towerRO.status());
             }
 
-            // ✅ Handle schedules - update existing ones by index, preserving IDs
+            // Handle schedules - update existing, add new, or remove extra ones
             if (towerRO.schedules() != null) {
                 int scheduleCount = towerRO.schedules().size();
                 if (scheduleCount != towerRO.frequency()) {
@@ -185,13 +186,28 @@ public class TowerService {
 
                 List<Schedule> existingSchedules = existingTower.getSchedules();
                 
-                // Update existing schedules in place - only update start_time, preserve ID
-                if (existingSchedules != null && !existingSchedules.isEmpty()) {
-                    for (int i = 0; i < towerRO.schedules().size() && i < existingSchedules.size(); i++) {
-                        Schedule existingSchedule = existingSchedules.get(i);
-                        // Only update the start_time, keep the existing ID and tower reference
-                        existingSchedule.setStart_time(towerRO.schedules().get(i).start_time());
+                if (existingSchedules == null) {
+                    existingSchedules = new java.util.ArrayList<>();
+                    existingTower.setSchedules(existingSchedules);
+                }
+                
+                // Update existing schedules and add new ones
+                for (int i = 0; i < towerRO.schedules().size(); i++) {
+                    if (i < existingSchedules.size()) {
+                        // Update existing schedule
+                        existingSchedules.get(i).setStart_time(towerRO.schedules().get(i).start_time());
+                    } else {
+                        // Add new schedule
+                        Schedule newSchedule = new Schedule();
+                        newSchedule.setStart_time(towerRO.schedules().get(i).start_time());
+                        newSchedule.setTower(existingTower);
+                        existingSchedules.add(newSchedule);
                     }
+                }
+                
+                // Remove extra schedules if frequency decreased
+                if (existingSchedules.size() > towerRO.schedules().size()) {
+                    existingSchedules.subList(towerRO.schedules().size(), existingSchedules.size()).clear();
                 }
             }
 

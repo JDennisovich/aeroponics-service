@@ -18,4 +18,19 @@ public enum WaterLevel {
     public String toString() {
         return label;
     }
+
+    /**
+     * Convert integer water level to WaterLevel enum
+     * @param level integer value representing water level
+     * @return corresponding WaterLevel enum
+     */
+    public static WaterLevel fromInt(int level) {
+        if (level >= 70) {
+            return HIGH;
+        } else if (level >= 30) {
+            return MEDIUM;
+        } else {
+            return LOW;
+        }
+    }
 }

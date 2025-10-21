@@ -73,7 +73,7 @@ public class WaterDepletionService {
 
         // Get current water level from the most recent log entry
         Nutrient_log latestLog = recentLogs.get(0);
-        WaterLevel currentWaterLevel = latestLog.getWater_level();
+        WaterLevel currentWaterLevel = WaterLevel.fromInt(latestLog.getWater_level());
         double currentWaterPercentage = WATER_LEVEL_PERCENTAGES.get(currentWaterLevel);
         
         log.info("Analyzing water depletion for tower {} - Current Water Level: {} ({}%), Total logs: {}", 
@@ -147,7 +147,7 @@ public class WaterDepletionService {
 
         // Convert water levels to percentages
         List<Double> waterPercentages = logs.stream()
-            .map(log -> WATER_LEVEL_PERCENTAGES.get(log.getWater_level()))
+            .map(log -> WATER_LEVEL_PERCENTAGES.get(WaterLevel.fromInt(log.getWater_level())))
             .collect(Collectors.toList());
 
         // Filter outliers for better accuracy
@@ -232,8 +232,8 @@ public class WaterDepletionService {
             
             if (end - start < 2) continue;
             
-            WaterLevel segmentStartLevel = logs.get(end - 1).getWater_level();
-            WaterLevel segmentEndLevel = logs.get(start).getWater_level();
+            WaterLevel segmentStartLevel = WaterLevel.fromInt(logs.get(end - 1).getWater_level());
+            WaterLevel segmentEndLevel = WaterLevel.fromInt(logs.get(start).getWater_level());
             
             double segmentStart = WATER_LEVEL_PERCENTAGES.get(segmentStartLevel);
             double segmentEnd = WATER_LEVEL_PERCENTAGES.get(segmentEndLevel);
@@ -262,8 +262,8 @@ public class WaterDepletionService {
 
         // Calculate change between each consecutive pair
         for (int i = 0; i < logs.size() - 1; i++) {
-            WaterLevel currentLevel = logs.get(i).getWater_level();
-            WaterLevel previousLevel = logs.get(i + 1).getWater_level();
+            WaterLevel currentLevel = WaterLevel.fromInt(logs.get(i).getWater_level());
+            WaterLevel previousLevel = WaterLevel.fromInt(logs.get(i + 1).getWater_level());
             
             double currentPercentage = WATER_LEVEL_PERCENTAGES.get(currentLevel);
             double previousPercentage = WATER_LEVEL_PERCENTAGES.get(previousLevel);

@@ -1,7 +1,6 @@
 package Capstone.Aeroponics.models.DTO.nutrient;
 
 import Capstone.Aeroponics.models.entities.Nutrient_log;
-import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +24,7 @@ public class NutrientDTO {
     private LocalDateTime time;
     private BigDecimal ph_level;
     private BigDecimal ppm;
-    private WaterLevel water_level;
+    private int water_level;
     private BigDecimal water_temperature;
 
     public NutrientDTO(Nutrient_log nutrientLog) {

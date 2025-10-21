@@ -141,7 +141,7 @@ public class SecurityConfig {
     .logout(logout -> logout
     .logoutUrl("/oauth/logout")
     .addLogoutHandler(logoutHandlerService)
-    .logoutSuccessHandler((_, _, _) -> SecurityContextHolder.clearContext()))
+    .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()))
     .addFilterBefore(new JwtAccessTokenFilter(rsaKeyRecord, jwtTokenUtils),
     UsernamePasswordAuthenticationFilter.class)
     .build();

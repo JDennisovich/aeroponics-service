@@ -1,0 +1,52 @@
+================================================================================
+QUICK RAILWAY DATABASE CONFIGURATION
+================================================================================
+
+STEP 1: Get Your Railway TCP Proxy Information
+-----------------------------------------------
+1. Go to Railway Dashboard → Your MySQL Database
+2. Find the "TCP Proxy" section
+3. Copy the Domain and Port (example below)
+
+Example:
+  Domain: monorail.proxy.rlwy.net
+  Port: 12345
+
+
+STEP 2: Update Your .env File
+------------------------------
+Open: aeroponics-service/.env
+
+Replace the database section with:
+
+# Database Configuration - Railway MySQL
+DB_URL=jdbc:mysql://[PASTE_DOMAIN_HERE]:[PASTE_PORT_HERE]/railway
+DB_USERNAME=root
+DB_PASSWORD=KGziwforModQGBuhRdlKIyXhADoyCgbX
+DB_DRIVER=com.mysql.cj.jdbc.Driver
+
+
+EXAMPLE (after filling in):
+# Database Configuration - Railway MySQL
+DB_URL=jdbc:mysql://monorail.proxy.rlwy.net:12345/railway
+DB_USERNAME=root
+DB_PASSWORD=KGziwforModQGBuhRdlKIyXhADoyCgbX
+DB_DRIVER=com.mysql.cj.jdbc.Driver
+
+
+STEP 3: Test the Connection
+----------------------------
+1. Save the .env file
+2. Restart your Spring Boot application
+3. Check the console for "Successfully connected" or connection errors
+
+
+IMPORTANT NOTES:
+----------------
+- The database name is "railway" (not "aeroponics")
+- Username is "root"
+- Password is already filled in from your Railway dashboard
+- Make sure to get the TCP Proxy info for local development
+- If deploying TO Railway, use ${{RAILWAY_PRIVATE_DOMAIN}} instead
+
+================================================================================

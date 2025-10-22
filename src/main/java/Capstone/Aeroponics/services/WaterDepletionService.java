@@ -4,26 +4,28 @@ import Capstone.Aeroponics.models.DTO.analytics.WaterDepletionDTO;
 import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Plant;
 import Capstone.Aeroponics.models.entities.Tower;
-import Capstone.Aeroponics.models.enums.WaterLevel;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
 import Capstone.Aeroponics.repositories.TowerRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Water Depletion Analytics Service
  * 
  * This service analyzes water level changes from nutrient logs to predict water depletion patterns.
+ * Water level is stored as integer (1-10) where:
+ * - 1-3 = High (80-100%)
+ * - 4-7 = Medium (40-70%)
+ * - 8-10 = Low (10-30%)
+ * 
  * It calculates:
  * - Current water level from the most recent nutrient log entry
  * - Water depletion rates based on historical water level trends
- * - Days until water reaches critical (LOW) level
+ * - Days until water reaches critical level
  * - Status indicators and actionable recommendations
  */
 @Service
@@ -34,12 +36,30 @@ public class WaterDepletionService {
     private final TowerRepository towerRepository;
     private final Nutrient_logRepository nutrientLogRepository;
 
-    // Water level to percentage mapping
-    private static final Map<WaterLevel, Double> WATER_LEVEL_PERCENTAGES = new HashMap<>();
-    static {
-        WATER_LEVEL_PERCENTAGES.put(WaterLevel.HIGH, 85.0);
-        WATER_LEVEL_PERCENTAGES.put(WaterLevel.MEDIUM, 50.0);
-        WATER_LEVEL_PERCENTAGES.put(WaterLevel.LOW, 15.0);
+    // Critical threshold for water level (20% = value 8-9)
+    private static final double CRITICAL_WATER_PERCENTAGE = 20.0;
+    
+    /**
+     * Convert raw water level (1-10) to percentage
+     * Formula: (11 - value) * 10
+     * 1 = 100%, 2 = 90%, 3 = 80%, ..., 9 = 20%, 10 = 10%
+     */
+    private double convertWaterLevelToPercentage(int waterLevel) {
+        if (waterLevel < 1 || waterLevel > 10) {
+            log.warn("Water level out of range: {}. Using default 50%", waterLevel);
+            return 50.0; // Default to medium
+        }
+        return (11 - waterLevel) * 10.0;
+    }
+    
+    /**
+     * Get water level category text for display
+     */
+    private String getWaterLevelText(int waterLevel) {
+        if (waterLevel >= 1 && waterLevel <= 3) return "High";
+        if (waterLevel >= 4 && waterLevel <= 7) return "Medium";
+        if (waterLevel >= 8 && waterLevel <= 10) return "Low";
+        return "Unknown";
     }
 
     /**
@@ -73,11 +93,12 @@ public class WaterDepletionService {
 
         // Get current water level from the most recent log entry
         Nutrient_log latestLog = recentLogs.get(0);
-        WaterLevel currentWaterLevel = WaterLevel.fromInt(latestLog.getWater_level());
-        double currentWaterPercentage = WATER_LEVEL_PERCENTAGES.get(currentWaterLevel);
+        int currentWaterLevelRaw = latestLog.getWater_level();
+        double currentWaterPercentage = convertWaterLevelToPercentage(currentWaterLevelRaw);
+        String currentWaterLevelText = getWaterLevelText(currentWaterLevelRaw);
         
-        log.info("Analyzing water depletion for tower {} - Current Water Level: {} ({}%), Total logs: {}", 
-                 tower.getId(), currentWaterLevel, currentWaterPercentage, recentLogs.size());
+        log.info("Analyzing water depletion for tower {} - Current Water Level: {} [Raw: {}] ({}%), Total logs: {}", 
+                 tower.getId(), currentWaterLevelText, currentWaterLevelRaw, currentWaterPercentage, recentLogs.size());
 
         // Calculate water depletion rate
         double waterDepletionRate = calculateWaterDepletionRate(recentLogs);
@@ -86,7 +107,7 @@ public class WaterDepletionService {
         int daysUntilCritical = calculateDaysUntilCritical(currentWaterPercentage, waterDepletionRate);
 
         // Determine status
-        String waterStatus = determineWaterStatus(currentWaterLevel, daysUntilCritical);
+        String waterStatus = determineWaterStatus(currentWaterPercentage, daysUntilCritical);
         String overallStatus = determineOverallStatus(waterStatus);
 
         // Calculate average change
@@ -94,7 +115,7 @@ public class WaterDepletionService {
 
         // Generate recommendation
         String recommendation = generateRecommendation(
-            currentWaterLevel, waterDepletionRate, daysUntilCritical
+            currentWaterPercentage, currentWaterLevelText, waterDepletionRate, daysUntilCritical
         );
 
         boolean needsImmediateAction = waterStatus.equals("CRITICAL");
@@ -103,8 +124,8 @@ public class WaterDepletionService {
                 .towerId(tower.getId())
                 .towerName(tower.getName())
                 .plantName(plant.getName())
-                .currentWaterLevel(currentWaterLevel.toString())
-                .currentWaterPercentage(currentWaterPercentage)
+                .currentWaterLevel(String.valueOf(currentWaterLevelRaw))
+                .currentWaterPercentage(Math.round(currentWaterPercentage * 10.0) / 10.0)
                 .waterDepletionRate(Math.round(waterDepletionRate * 100.0) / 100.0)
                 .daysUntilCritical(daysUntilCritical)
                 .waterStatus(waterStatus)
@@ -145,9 +166,9 @@ public class WaterDepletionService {
     private double calculateWaterDepletionRate(List<Nutrient_log> logs) {
         if (logs.size() < 2) return 0;
 
-        // Convert water levels to percentages
+        // Convert water levels (1-10) to percentages
         List<Double> waterPercentages = logs.stream()
-            .map(log -> WATER_LEVEL_PERCENTAGES.get(WaterLevel.fromInt(log.getWater_level())))
+            .map(log -> convertWaterLevelToPercentage(log.getWater_level()))
             .collect(Collectors.toList());
 
         // Filter outliers for better accuracy
@@ -232,11 +253,8 @@ public class WaterDepletionService {
             
             if (end - start < 2) continue;
             
-            WaterLevel segmentStartLevel = WaterLevel.fromInt(logs.get(end - 1).getWater_level());
-            WaterLevel segmentEndLevel = WaterLevel.fromInt(logs.get(start).getWater_level());
-            
-            double segmentStart = WATER_LEVEL_PERCENTAGES.get(segmentStartLevel);
-            double segmentEnd = WATER_LEVEL_PERCENTAGES.get(segmentEndLevel);
+            double segmentStart = convertWaterLevelToPercentage(logs.get(end - 1).getWater_level());
+            double segmentEnd = convertWaterLevelToPercentage(logs.get(start).getWater_level());
             
             double segmentChange = segmentEnd - segmentStart;
             double segmentDays = (end - start) / 8.0;
@@ -262,11 +280,8 @@ public class WaterDepletionService {
 
         // Calculate change between each consecutive pair
         for (int i = 0; i < logs.size() - 1; i++) {
-            WaterLevel currentLevel = WaterLevel.fromInt(logs.get(i).getWater_level());
-            WaterLevel previousLevel = WaterLevel.fromInt(logs.get(i + 1).getWater_level());
-            
-            double currentPercentage = WATER_LEVEL_PERCENTAGES.get(currentLevel);
-            double previousPercentage = WATER_LEVEL_PERCENTAGES.get(previousLevel);
+            double currentPercentage = convertWaterLevelToPercentage(logs.get(i).getWater_level());
+            double previousPercentage = convertWaterLevelToPercentage(logs.get(i + 1).getWater_level());
             
             sum += (currentPercentage - previousPercentage);
             count++;
@@ -280,11 +295,11 @@ public class WaterDepletionService {
     }
 
     /**
-     * Calculate days until water reaches critical (LOW) level
+     * Calculate days until water reaches critical level (< 20%)
      */
     private int calculateDaysUntilCritical(double currentPercentage, double depletionRate) {
-        // If already at LOW level
-        if (currentPercentage <= WATER_LEVEL_PERCENTAGES.get(WaterLevel.LOW)) {
+        // If already at critical level
+        if (currentPercentage <= CRITICAL_WATER_PERCENTAGE) {
             return 0;
         }
 
@@ -293,8 +308,8 @@ public class WaterDepletionService {
             return 999; // Water is stable or increasing
         }
 
-        // Calculate days until reaching LOW level (15%)
-        double criticalThreshold = WATER_LEVEL_PERCENTAGES.get(WaterLevel.LOW);
+        // Calculate days until reaching critical level (20%)
+        double criticalThreshold = CRITICAL_WATER_PERCENTAGE;
         double difference = currentPercentage - criticalThreshold;
         int daysUntilCritical = (int) Math.ceil(difference / Math.abs(depletionRate));
         
@@ -305,20 +320,20 @@ public class WaterDepletionService {
     }
 
     /**
-     * Determine water status based on current level and days until critical
+     * Determine water status based on current percentage and days until critical
      */
-    private String determineWaterStatus(WaterLevel currentLevel, int daysUntilCritical) {
-        // Check if at LOW level
-        if (currentLevel == WaterLevel.LOW) {
+    private String determineWaterStatus(double currentPercentage, int daysUntilCritical) {
+        // Check if at critical level (< 20% = values 9-10)
+        if (currentPercentage <= CRITICAL_WATER_PERCENTAGE) {
             return "CRITICAL";
         }
 
-        // Check if at MEDIUM level or approaching LOW soon
-        if (currentLevel == WaterLevel.MEDIUM || daysUntilCritical <= 3) {
+        // Check if approaching critical soon or at medium-low level (20-40% = values 7-8)
+        if (currentPercentage <= 40.0 || daysUntilCritical <= 3) {
             return "WARNING";
         }
 
-        // HIGH level and not approaching critical soon
+        // High level (> 40% = values 1-6) and not approaching critical soon
         return "OPTIMAL";
     }
 
@@ -341,22 +356,22 @@ public class WaterDepletionService {
     /**
      * Generate recommendation based on water level analysis
      */
-    private String generateRecommendation(WaterLevel currentLevel, double depletionRate, int daysUntilCritical) {
+    private String generateRecommendation(double currentPercentage, String levelText, double depletionRate, int daysUntilCritical) {
         StringBuilder rec = new StringBuilder();
         
-        log.info("Generating recommendation - Water Level: {}, Depletion rate: {}%/day, Days until critical: {}", 
-                 currentLevel, depletionRate, daysUntilCritical);
+        log.info("Generating recommendation - Water Level: {} ({}%), Depletion rate: {}%/day, Days until critical: {}", 
+                 levelText, currentPercentage, depletionRate, daysUntilCritical);
 
         // Check current water level
-        if (currentLevel == WaterLevel.LOW) {
+        if (currentPercentage <= CRITICAL_WATER_PERCENTAGE) { // < 20%
             rec.append("⚠️ Water level is LOW. Refill the reservoir immediately to prevent system damage. ");
-        } else if (currentLevel == WaterLevel.MEDIUM) {
+        } else if (currentPercentage <= 40.0) { // 20-40%
             if (depletionRate < -5) {
                 rec.append("⚠️ Water level is MEDIUM and depleting rapidly. Plan to refill soon. ");
             } else {
                 rec.append("📊 Water level is MEDIUM. Monitor and prepare to refill. ");
             }
-        } else if (currentLevel == WaterLevel.HIGH) {
+        } else { // > 40%
             if (daysUntilCritical <= 3 && daysUntilCritical > 0) {
                 rec.append("⚠️ Water is depleting rapidly. Prepare to refill within the next few days. ");
             } else if (depletionRate < -3) {

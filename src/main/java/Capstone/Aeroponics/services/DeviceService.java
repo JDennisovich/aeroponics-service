@@ -5,6 +5,7 @@ import Capstone.Aeroponics.models.entities.Device;
 import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.enums.DeviceStatus;
 import Capstone.Aeroponics.repositories.DeviceRepository;
+import Capstone.Aeroponics.repositories.TowerRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ public class DeviceService {
     public static final String DEVICE = "Device";
 
     private final DeviceRepository deviceRepository;
+    private final TowerRepository towerRepository;
 
     // Register device as FREE (NodeMCU boot-up) - upsert logic
     public DeviceDTO registerDevice(String mac_address, String ip_address) {
@@ -121,8 +123,46 @@ public class DeviceService {
                 deviceRepository.save(device);
                 log.info(DEVICE + " unassigned from tower: " + device.getMacAddress());
             }
+            // If no devices remain assigned, mark tower inactive
+            List<Device> remaining = deviceRepository.findByTower(tower);
+            if (remaining == null || remaining.isEmpty()) {
+                tower.setStatus(false);
+                towerRepository.save(tower);
+                log.info("Tower {} marked INACTIVE due to no assigned devices", tower.getName());
+            }
         } catch (Exception e) {
             String errorMessage = "Error while unassigning devices from tower";
+            log.error(errorMessage, e);
+            throw new ServiceException(errorMessage, e);
+        }
+    }
+
+    // Unassign a specific device from its tower and mark tower inactive if none remain
+    public void unassignDeviceFromTower(Long deviceId) {
+        try {
+            Device device = deviceRepository.findById(deviceId)
+                    .orElseThrow(() -> new ServiceException(DEVICE + " not found with id: " + deviceId));
+            Tower tower = device.getTower();
+            if (tower == null) {
+                // Nothing to do; ensure device is FREE
+                device.setStatus(DeviceStatus.FREE);
+                deviceRepository.save(device);
+                return;
+            }
+
+            device.setTower(null);
+            device.setStatus(DeviceStatus.FREE);
+            deviceRepository.save(device);
+            log.info(DEVICE + " {} unassigned from tower {}", device.getMacAddress(), tower.getName());
+
+            List<Device> remaining = deviceRepository.findByTower(tower);
+            if (remaining == null || remaining.isEmpty()) {
+                tower.setStatus(false);
+                towerRepository.save(tower);
+                log.info("Tower {} marked INACTIVE due to no assigned devices", tower.getName());
+            }
+        } catch (Exception e) {
+            String errorMessage = "Error unassigning device from tower";
             log.error(errorMessage, e);
             throw new ServiceException(errorMessage, e);
         }

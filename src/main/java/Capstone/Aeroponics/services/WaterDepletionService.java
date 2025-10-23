@@ -297,7 +297,7 @@ public class WaterDepletionService {
     /**
      * Calculate days until water reaches critical level (< 20%)
      */
-    private int calculateDaysUntilCritical(double currentPercentage, double depletionRate) {
+    private int calculateDaysUntilCxritical(double currentPercentage, double depletionRate) {
         // If already at critical level
         if (currentPercentage <= CRITICAL_WATER_PERCENTAGE) {
             return 0;

@@ -4,6 +4,7 @@ import Capstone.Aeroponics.models.DTO.device.DeviceDTO;
 import Capstone.Aeroponics.models.entities.Device;
 import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.enums.DeviceStatus;
+import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.repositories.DeviceRepository;
 import Capstone.Aeroponics.repositories.TowerRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
@@ -126,7 +127,7 @@ public class DeviceService {
             // If no devices remain assigned, mark tower inactive
             List<Device> remaining = deviceRepository.findByTower(tower);
             if (remaining == null || remaining.isEmpty()) {
-                tower.setStatus(false);
+                tower.setStatus(TowerStatus.INACTIVE);
                 towerRepository.save(tower);
                 log.info("Tower {} marked INACTIVE due to no assigned devices", tower.getName());
             }
@@ -157,7 +158,7 @@ public class DeviceService {
 
             List<Device> remaining = deviceRepository.findByTower(tower);
             if (remaining == null || remaining.isEmpty()) {
-                tower.setStatus(false);
+                tower.setStatus(TowerStatus.INACTIVE);
                 towerRepository.save(tower);
                 log.info("Tower {} marked INACTIVE due to no assigned devices", tower.getName());
             }

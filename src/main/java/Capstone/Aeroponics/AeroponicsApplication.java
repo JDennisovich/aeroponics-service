@@ -95,6 +95,7 @@ public class AeroponicsApplication {
 			if (users.isEmpty()) {
 				user = User.builder()
 						.first_name("System")
+						.email("admin@example.com")
 						.last_name("Admin")
 						.password(passwordEncoder.encode("Testing123!"))
 						.build();

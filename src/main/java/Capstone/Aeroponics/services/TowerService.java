@@ -2,12 +2,11 @@ package Capstone.Aeroponics.services;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import Capstone.Aeroponics.models.DTO.device.DeviceDTO;
 import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
-import Capstone.Aeroponics.models.entities.Nutrient_log;
 import Capstone.Aeroponics.models.entities.Schedule;
+import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.stereotype.Service;
@@ -117,7 +116,8 @@ public class TowerService {
         try {
             // Convert RO → Entity
             Tower tower = towerRO.toEntity(null);
-            tower.setStatus(true);
+            // New towers start INACTIVE; device assignment will activate
+            tower.setStatus(TowerStatus.INACTIVE);
 
             // Validate schedules count against frequency
             if (towerRO.schedules() != null) {
@@ -147,6 +147,10 @@ public class TowerService {
             log.info("Tower created successfully: {} with ID: {}", savedTower.getName(), savedTower.getId());
             return savedTower;
 
+        } catch (ServiceException se) {
+            // Preserve specific service messages (e.g., requires device assignment)
+            log.error(se.getMessage(), se);
+            throw se;
         } catch (Exception e) {
             String errorMessage = MessageUtils.saveErrorMessage(TOWER);
             log.error(errorMessage, e);
@@ -172,6 +176,21 @@ public class TowerService {
             existingTower.setWatering_duration(towerRO.watering_duration());
             if (towerRO.status() != null) {
                 existingTower.setStatus(towerRO.status());
+            }
+
+            // If request explicitly sets INACTIVE or ARCHIVED, persist immediately and skip schedule checks
+            if (TowerStatus.INACTIVE.equals(towerRO.status()) || TowerStatus.ARCHIVED.equals(towerRO.status())) {
+                towerRepository.save(existingTower);
+                log.info("Tower {} status updated to {}", existingTower.getName(), towerRO.status());
+                return;
+            }
+
+            // If request explicitly sets ACTIVE, require an assigned device first
+            if (TowerStatus.ACTIVE.equals(towerRO.status())) {
+                List<DeviceDTO> assigned = deviceService.getDevicesByTower(existingTower);
+                if (assigned == null || assigned.isEmpty()) {
+                    throw new ServiceException("A device must be assigned before activating this tower.");
+                }
             }
 
             // Handle schedules - update existing, add new, or remove extra ones
@@ -211,7 +230,7 @@ public class TowerService {
                 }
             }
 
-            // ✅ Save (JPA will handle update)
+            // Save (JPA will handle update)
             towerRepository.save(existingTower);
 
         } catch (Exception e) {
@@ -251,6 +270,10 @@ public class TowerService {
 
             deviceService.assignDeviceToTower(deviceId, tower);
             log.info("Device {} assigned to tower {}", deviceId, tower.getName());
+
+            // Activate tower upon successful device assignment
+            tower.setStatus(TowerStatus.ACTIVE);
+            towerRepository.save(tower);
         } catch (Exception e) {
             String errorMessage = "Error assigning device to tower";
             log.error(errorMessage, e);

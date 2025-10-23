@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface TowerRepository extends JpaRepository<Tower, Long> {
     List<Tower> findByUserId(Long id);
+    List<Tower> findByUserIdAndStatusTrue(Long id);
 }

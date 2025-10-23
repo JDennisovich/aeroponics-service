@@ -4,6 +4,7 @@ import Capstone.Aeroponics.models.DTO.plant.PlantDTO;
 import Capstone.Aeroponics.models.DTO.schedule.ScheduleDTO;
 import Capstone.Aeroponics.models.DTO.user.UserDTO;
 import Capstone.Aeroponics.models.entities.Tower;
+import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.models.enums.WaterLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +28,7 @@ public class TowerDTO {
     private PlantDTO plant;
     private List<ScheduleDTO> schedules; // ✅ include schedules
     private String name;
-    private Boolean status;
+    private TowerStatus status;
     private int frequency;
     private LocalDate startDate;
     private LocalDate endDate;

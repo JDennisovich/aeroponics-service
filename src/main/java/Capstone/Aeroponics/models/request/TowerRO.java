@@ -4,6 +4,7 @@ import Capstone.Aeroponics.models.entities.Plant;
 import Capstone.Aeroponics.models.entities.Schedule;
 import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.entities.User;
+import Capstone.Aeroponics.models.enums.TowerStatus;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public record TowerRO(
         @NotNull(message = "Start date is mandatory") LocalDate start_date,
         @NotNull(message = "End date is mandatory") LocalDate end_date,
         @NotNull(message = "Watering duration is mandatory") Integer watering_duration,
-        Boolean status, // Optional status field
+        TowerStatus status, // Optional status field
         List<ScheduleRO> schedules // ✅ Nested schedules
 ) {
     public Tower toEntity(Tower tower) {
@@ -35,7 +36,7 @@ public record TowerRO(
         tower.setUser(user);
         tower.setPlant(plant);
         tower.setName(name);
-        tower.setStatus(Objects.nonNull(status) ? status : true); // Use provided status or default to true
+        tower.setStatus(Objects.nonNull(status) ? status : TowerStatus.ACTIVE); // Use provided status or default to ACTIVE
         tower.setFrequency(frequency);
         tower.setStart_date(start_date);
         tower.setEnd_date(end_date);

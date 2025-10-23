@@ -1,5 +1,6 @@
 package Capstone.Aeroponics.models.entities;
 
+import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.persistence.*;
 import lombok.*;
@@ -51,8 +52,10 @@ public class Tower implements Serializable {
     @Column(name = "name", nullable =  false)
     private String name;
 
-    @Column(name = "status", nullable = false)
-    private Boolean status;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, columnDefinition = "ENUM('ACTIVE', 'INACTIVE', 'ARCHIVED') DEFAULT 'ACTIVE'")
+    @Builder.Default
+    private TowerStatus status = TowerStatus.ACTIVE;
 
     @Column(name = "frequency", nullable = false)
     private int frequency;

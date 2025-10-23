@@ -17,6 +17,7 @@ import Capstone.Aeroponics.models.request.jwt.JwtRecord;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @RequiredArgsConstructor
@@ -33,6 +34,24 @@ public class JwtTokenGenerator {
 
     private final static String SPACE_DELIMITER = " ";
 
+    private static final long DEFAULT_EXPIRY_MINUTES = 30L;
+    private static final long DEFAULT_REFRESH_HOURS = 24L;
+
+    @PostConstruct
+    private void validateConfig() {
+        long expiry = jwtRecord.expiryAt();
+        long refresh = jwtRecord.refreshExpiryAt();
+
+        if (expiry <= 0) {
+            log.warn("jwt.core.expiryAt is not set or invalid ({}). Falling back to default {} minutes.", expiry, DEFAULT_EXPIRY_MINUTES);
+        }
+        if (refresh <= 0) {
+            log.warn("jwt.core.refreshExpiryAt is not set or invalid ({}). Falling back to default {} hours.", refresh, DEFAULT_REFRESH_HOURS);
+        }
+        log.info("JWT configuration - issuer: {}, expiryMinutes: {}, refreshHours: {}",
+                jwtRecord.issuer(), expiry <= 0 ? DEFAULT_EXPIRY_MINUTES : expiry, refresh <= 0 ? DEFAULT_REFRESH_HOURS : refresh);
+    }
+
     /**
      * Generate access token string.
      *
@@ -44,10 +63,19 @@ public class JwtTokenGenerator {
         log.info("[JwtTokenGenerator.generateAccessToken]::invoked");
         log.debug("generating access token for: {}", authentication.getName());
 
+        Instant now = Instant.now();
+        long expiryMinutes = jwtRecord.expiryAt() > 0 ? jwtRecord.expiryAt() : DEFAULT_EXPIRY_MINUTES;
+        Instant expiresAt = now.plus(expiryMinutes, ChronoUnit.MINUTES);
+        if (!expiresAt.isAfter(now)) {
+            // ensure we always have expiresAt > issuedAt
+            expiresAt = now.plus(1, ChronoUnit.MINUTES);
+            log.warn("Computed expiresAt was not after issuedAt; using fallback expiry of 1 minute from now.");
+        }
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(jwtRecord.issuer())
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plus(jwtRecord.expiryAt(), ChronoUnit.MINUTES))
+                .issuedAt(now)
+                .expiresAt(expiresAt)
                 .subject(authentication.getName())
                 .build();
 
@@ -66,10 +94,18 @@ public class JwtTokenGenerator {
         log.info("[JwtTokenGenerator.generateRefreshToken]::invoked");
         log.debug("generating access token based on refreshToken for: {}", authentication.getName());
 
+        Instant now = Instant.now();
+        long refreshHours = jwtRecord.refreshExpiryAt() > 0 ? jwtRecord.refreshExpiryAt() : DEFAULT_REFRESH_HOURS;
+        Instant expiresAt = now.plus(refreshHours, ChronoUnit.HOURS);
+        if (!expiresAt.isAfter(now)) {
+            expiresAt = now.plus(1, ChronoUnit.HOURS);
+            log.warn("Computed refresh expiresAt was not after issuedAt; using fallback of 1 hour from now.");
+        }
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(jwtRecord.issuer())
-                .issuedAt(Instant.now())
-                .expiresAt(Instant.now().plus(jwtRecord.refreshExpiryAt(), ChronoUnit.HOURS))
+                .issuedAt(now)
+                .expiresAt(expiresAt)
                 .subject(authentication.getName())
                 .claim(SCOPE, SCOPE_REFRESH_TOKEN)
                 .build();

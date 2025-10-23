@@ -41,8 +41,8 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 		<dependency>
-    	<groupId>org.springframework.boot</groupId>
-    	<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
 		<dependency>
 		<groupId>org.springframework.boot</groupId>
@@ -56,14 +56,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-mysql</artifactId>
-		</dependency> -->
 
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -94,6 +86,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <!-- Spring DotEnv - automatically loads .env files -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+
+        <!-- Cloudinary Java SDK -->
+        <dependency>
+            <groupId>com.cloudinary</groupId>
+            <artifactId>cloudinary-http44</artifactId>
+            <version>1.36.0</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -101,11 +106,16 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
 				<configuration>
+					<source>21</source>
+					<target>21</target>
+					<release>21</release>
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
 						</path>
 					</annotationProcessorPaths>
 				</configuration>

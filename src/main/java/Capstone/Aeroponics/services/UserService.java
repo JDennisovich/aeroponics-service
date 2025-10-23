@@ -258,6 +258,11 @@ public class UserService implements UserDetailsService{
 
     /**
      * Load the current user's profile picture bytes and content type.
+     *
+     * This method was updated to support images stored remotely (Cloudinary). It will
+     * - Try to load the image from a local path (existing behavior)
+     * - If not available, and the stored URL is a remote URL, fetch bytes from the remote URL
+     *   and attempt to guess the content type from the file extension.
      */
     public FileData getProfilePictureFile(HttpServletRequest request) {
         try {
@@ -267,17 +272,30 @@ public class UserService implements UserDetailsService{
             }
 
             String fileUrl = user.getProfilePictureUrl();
+
+            // If the stored URL is remote (e.g., Cloudinary), fetch bytes via HTTP (preferred)
+            if (fileUrl.startsWith("http")) {
+                var bytes = fileService.getImageBytesFromUrl(fileUrl);
+                if (bytes == null || bytes.length == 0) {
+                    return null;
+                }
+                String contentType = guessContentTypeFromUrl(fileUrl);
+                return new FileData(bytes, contentType);
+            }
+
+            // Fallback to legacy local storage behavior if a non-URL value is stored
             String fileName = fileUrl.substring(fileUrl.lastIndexOf('/') + 1);
             var path = fileService.getImage(fileName);
-            if (path == null) {
-                return null;
+            if (path != null) {
+                var bytes = fileService.getImageByte(path);
+                if (bytes == null || bytes.length == 0) {
+                    return null;
+                }
+                String contentType = fileService.getImageContentType(path);
+                return new FileData(bytes, contentType);
             }
-            var bytes = fileService.getImageByte(path);
-            if (bytes == null || bytes.length == 0) {
-                return null;
-            }
-            String contentType = fileService.getImageContentType(path);
-            return new FileData(bytes, contentType);
+
+            return null;
         } catch (Exception e) {
             String errorMessage = "Failed to load profile picture";
             log.error(errorMessage, e);
@@ -285,5 +303,15 @@ public class UserService implements UserDetailsService{
         }
     }
 
-}
+    // Helper to guess content type from a file URL extension. Falls back to "application/octet-stream".
+    private static String guessContentTypeFromUrl(String url) {
+        String lower = url.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".png")) return "image/png";
+        if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return "image/jpeg";
+        if (lower.endsWith(".gif")) return "image/gif";
+        if (lower.endsWith(".webp")) return "image/webp";
+        if (lower.endsWith(".bmp")) return "image/bmp";
+        return "application/octet-stream";
+    }
 
+}

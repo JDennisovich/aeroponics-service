@@ -191,7 +191,7 @@ public class TowerService {
                     existingTower.setSchedules(existingSchedules);
                 }
                 
-                // Update existing schedules and add new ones
+                // Update existing schedules and add new ones //TODO: refactor this shit
                 for (int i = 0; i < towerRO.schedules().size(); i++) {
                     if (i < existingSchedules.size()) {
                         // Update existing schedule

@@ -39,7 +39,7 @@ public class Tower implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    private User user; 
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "plant_id", nullable = false)

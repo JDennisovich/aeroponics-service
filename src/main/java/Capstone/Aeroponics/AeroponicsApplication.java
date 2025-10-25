@@ -38,9 +38,32 @@ import Capstone.Aeroponics.repositories.FaqRepository;
 public class AeroponicsApplication {
 
 	public static void main(String[] args) {
-		// Load .env from project root and set system properties when they are not already set.
-		Path envPath = Paths.get(System.getProperty("user.dir"), ".env");
-		if (Files.exists(envPath)) {
+		// Load .env BEFORE Spring Boot initialization
+		loadEnvFile();
+
+		SpringApplication.run(AeroponicsApplication.class, args);
+	}
+
+	/**
+	 * Loads environment variables from .env file and sets them as system properties.
+	 * Checks multiple possible locations for the .env file.
+	 */
+	private static void loadEnvFile() {
+		// Try multiple possible locations
+		Path[] possiblePaths = {
+			Paths.get(".", ".env"),  // Current directory
+			Paths.get(System.getProperty("user.dir"), "backend (java)", "Aeroponics", ".env")  // Nested path
+		};
+
+		Path envPath = null;
+		for (Path path : possiblePaths) {
+			if (Files.exists(path)) {
+				envPath = path;
+				break;
+			}
+		}
+
+		if (envPath != null) {
 			try (Stream<String> lines = Files.lines(envPath)) {
 				lines.map(String::trim)
 					 .filter(l -> !l.isEmpty() && !l.startsWith("#"))
@@ -49,20 +72,23 @@ public class AeroponicsApplication {
 						 if (eq > 0) {
 							 String key = l.substring(0, eq).trim();
 							 String val = l.substring(eq + 1).trim();
+							 // Remove quotes if present
 							 if ((val.startsWith("\"") && val.endsWith("\"")) || (val.startsWith("'") && val.endsWith("'"))) {
 								 val = val.substring(1, val.length() - 1);
 							 }
+							 // Set as system property if not already set
 							 if (System.getProperty(key) == null && System.getenv(key) == null) {
 								 System.setProperty(key, val);
 							 }
 						 }
 					 });
+				System.out.println("Loaded .env file from: " + envPath.toAbsolutePath());
 			} catch (IOException e) {
-				System.out.println("Warning: failed to read .env file at " + envPath + ": " + e.getMessage());
+				System.err.println("Warning: failed to read .env file at " + envPath + ": " + e.getMessage());
 			}
+		} else {
+			System.err.println("Warning: No .env file found in any expected location");
 		}
-
-		SpringApplication.run(AeroponicsApplication.class, args);
 	}
 
 	@Autowired

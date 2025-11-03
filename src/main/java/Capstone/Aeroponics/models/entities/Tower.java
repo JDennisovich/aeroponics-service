@@ -45,10 +45,6 @@ public class Tower implements Serializable {
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
 
-    @OneToMany(mappedBy = "tower", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<Schedule> schedules;
-
     @Column(name = "name", nullable =  false)
     private String name;
 
@@ -57,8 +53,11 @@ public class Tower implements Serializable {
     @Builder.Default
     private TowerStatus status = TowerStatus.ACTIVE;
 
-    @Column(name = "frequency", nullable = false)
-    private int frequency;
+    @Column(name = "watering_duration", nullable = false)
+    private Integer watering_duration;
+
+    @Column(name = "intervals", nullable = false)
+    private int intervals;
 
     @Column(name = "start_date", nullable = false)
     private LocalDate start_date;
@@ -66,7 +65,9 @@ public class Tower implements Serializable {
     @Column(name = "end_date", nullable = false)
     private LocalDate end_date;
 
-    @Column(name = "watering_duration", nullable = false)
-    private int watering_duration;
+    @Column(name = "start_time", nullable = false)
+    private LocalTime start_time;
 
+    @Column(name = "end_time", nullable = false)
+    private LocalTime end_time;
 }

@@ -5,19 +5,17 @@ import java.util.Optional;
 
 import Capstone.Aeroponics.models.DTO.device.DeviceDTO;
 import Capstone.Aeroponics.models.DTO.tower.TowerDTO;
-import Capstone.Aeroponics.models.entities.Schedule;
+import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.repositories.Nutrient_logRepository;
-import org.hibernate.service.spi.ServiceException;
-import org.springframework.stereotype.Service;
-
+import Capstone.Aeroponics.repositories.TowerRepository;
 import Capstone.Aeroponics.exception.ResourceNotFoundException;
 import Capstone.Aeroponics.models.request.TowerRO;
-import Capstone.Aeroponics.models.entities.Tower;
-import Capstone.Aeroponics.repositories.TowerRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.service.spi.ServiceException;
+import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
@@ -119,30 +117,7 @@ public class TowerService {
             // New towers start INACTIVE; device assignment will activate
             tower.setStatus(TowerStatus.INACTIVE);
 
-            // Validate schedules count against frequency
-            if (towerRO.schedules() != null) {
-                int scheduleCount = towerRO.schedules().size();
-                if (scheduleCount != towerRO.frequency()) {
-                    throw new ServiceException(
-                            "Invalid number of schedules: expected " + towerRO.frequency()
-                                    + " but got " + scheduleCount
-                    );
-                }
-
-                // Map schedules to entity and link back to tower
-                tower.setSchedules(
-                        towerRO.schedules().stream()
-                                .map(scheduleRO -> {
-                                    Schedule schedule = scheduleRO.toEntity(null);
-                                    schedule.setId(null); // Force INSERT, not UPDATE
-                                    schedule.setTower(tower);
-                                    return schedule;
-                                })
-                                .toList()
-                );
-            }
-
-            // Save tower with schedules (device will be assigned later)
+            // Save tower (device will be assigned later)
             Tower savedTower = towerRepository.save(tower);
             log.info("Tower created successfully: {} with ID: {}", savedTower.getName(), savedTower.getId());
             return savedTower;
@@ -160,7 +135,7 @@ public class TowerService {
 
     public void update(Long id, TowerRO towerRO) {
         try {
-            // Fetch existing tower with schedules
+            // Fetch existing tower
             Tower existingTower = getTowerById(id);
             if (existingTower == null) {
                 throw new ResourceNotFoundException(TOWER + " not found");
@@ -170,15 +145,17 @@ public class TowerService {
             existingTower.setName(towerRO.name());
             existingTower.setUser(towerRO.user());
             existingTower.setPlant(towerRO.plant());
-            existingTower.setFrequency(towerRO.frequency());
+            existingTower.setIntervals(towerRO.intervals());
             existingTower.setStart_date(towerRO.start_date());
             existingTower.setEnd_date(towerRO.end_date());
-            existingTower.setWatering_duration(towerRO.watering_duration());
+            existingTower.setStart_time(towerRO.start_time());
+            existingTower.setEnd_time(towerRO.end_time());
+            existingTower.setWatering_duration(towerRO.watering_duration() != null ? towerRO.watering_duration() : 15);
             if (towerRO.status() != null) {
                 existingTower.setStatus(towerRO.status());
             }
 
-            // If request explicitly sets INACTIVE or ARCHIVED, persist immediately and skip schedule checks
+            // If request explicitly sets INACTIVE or ARCHIVED, persist immediately
             if (TowerStatus.INACTIVE.equals(towerRO.status()) || TowerStatus.ARCHIVED.equals(towerRO.status())) {
                 towerRepository.save(existingTower);
                 log.info("Tower {} status updated to {}", existingTower.getName(), towerRO.status());
@@ -190,43 +167,6 @@ public class TowerService {
                 List<DeviceDTO> assigned = deviceService.getDevicesByTower(existingTower);
                 if (assigned == null || assigned.isEmpty()) {
                     throw new ServiceException("A device must be assigned before activating this tower.");
-                }
-            }
-
-            // Handle schedules - update existing, add new, or remove extra ones
-            if (towerRO.schedules() != null) {
-                int scheduleCount = towerRO.schedules().size();
-                if (scheduleCount != towerRO.frequency()) {
-                    throw new ServiceException(
-                            "Invalid number of schedules: expected " + towerRO.frequency()
-                                    + " but got " + scheduleCount
-                    );
-                }
-
-                List<Schedule> existingSchedules = existingTower.getSchedules();
-                
-                if (existingSchedules == null) {
-                    existingSchedules = new java.util.ArrayList<>();
-                    existingTower.setSchedules(existingSchedules);
-                }
-                
-                // Update existing schedules and add new ones //TODO: refactor this shit
-                for (int i = 0; i < towerRO.schedules().size(); i++) {
-                    if (i < existingSchedules.size()) {
-                        // Update existing schedule
-                        existingSchedules.get(i).setStart_time(towerRO.schedules().get(i).start_time());
-                    } else {
-                        // Add new schedule
-                        Schedule newSchedule = new Schedule();
-                        newSchedule.setStart_time(towerRO.schedules().get(i).start_time());
-                        newSchedule.setTower(existingTower);
-                        existingSchedules.add(newSchedule);
-                    }
-                }
-                
-                // Remove extra schedules if frequency decreased
-                if (existingSchedules.size() > towerRO.schedules().size()) {
-                    existingSchedules.subList(towerRO.schedules().size(), existingSchedules.size()).clear();
                 }
             }
 

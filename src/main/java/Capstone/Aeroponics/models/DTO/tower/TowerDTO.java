@@ -1,11 +1,9 @@
 package Capstone.Aeroponics.models.DTO.tower;
 
 import Capstone.Aeroponics.models.DTO.plant.PlantDTO;
-import Capstone.Aeroponics.models.DTO.schedule.ScheduleDTO;
 import Capstone.Aeroponics.models.DTO.user.UserDTO;
 import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.enums.TowerStatus;
-import Capstone.Aeroponics.models.enums.WaterLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,13 +25,14 @@ public class TowerDTO {
     private long id;
     private UserDTO user;
     private PlantDTO plant;
-    private List<ScheduleDTO> schedules; // ✅ include schedules
     private String name;
     private TowerStatus status;
-    private int frequency;
+    private Integer wateringDuration;
+    private int intervals;
     private LocalDate startDate;
     private LocalDate endDate;
-    private Integer wateringDuration;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     public TowerDTO(Tower tower) {
         this.id = tower.getId();
@@ -40,16 +40,11 @@ public class TowerDTO {
         this.plant = new PlantDTO(tower.getPlant());
         this.name = tower.getName();
         this.status = tower.getStatus();
-        this.frequency = tower.getFrequency();
+        this.wateringDuration = tower.getWatering_duration();
+        this.intervals = tower.getIntervals();
         this.startDate = tower.getStart_date();
         this.endDate = tower.getEnd_date();
-        this.wateringDuration = tower.getWatering_duration();
-
-        if (tower.getSchedules() != null) {
-            this.schedules = tower.getSchedules()
-                    .stream()
-                    .map(ScheduleDTO::new)
-                    .collect(Collectors.toList());
-        }
+        this.startTime = tower.getStart_time();
+        this.endTime = tower.getEnd_time();
     }
 }

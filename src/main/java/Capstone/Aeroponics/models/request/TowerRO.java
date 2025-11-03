@@ -1,28 +1,27 @@
 package Capstone.Aeroponics.models.request;
 
 import Capstone.Aeroponics.models.entities.Plant;
-import Capstone.Aeroponics.models.entities.Schedule;
 import Capstone.Aeroponics.models.entities.Tower;
 import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.enums.TowerStatus;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalTime;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public record TowerRO(
         Long id,
         @NotNull(message = "User is mandatory") User user,
         @NotNull(message = "Plant is mandatory") Plant plant,
         @NotNull(message = "Name is mandatory") String name,
-        @NotNull(message = "Frequency is mandatory") int frequency,
+        @NotNull(message = "Intervals is mandatory") int intervals,
         @NotNull(message = "Start date is mandatory") LocalDate start_date,
         @NotNull(message = "End date is mandatory") LocalDate end_date,
-        @NotNull(message = "Watering duration is mandatory") Integer watering_duration,
-        TowerStatus status, // Optional status field
-        List<ScheduleRO> schedules // ✅ Nested schedules
+        @NotNull(message = "Start time is mandatory") LocalTime start_time,
+        @NotNull(message = "End time is mandatory") LocalTime end_time,
+        Integer watering_duration, // Optional, defaults to 15
+        TowerStatus status // Optional status field
 ) {
     public Tower toEntity(Tower tower) {
         if (tower == null) {
@@ -36,34 +35,13 @@ public record TowerRO(
         tower.setUser(user);
         tower.setPlant(plant);
         tower.setName(name);
-        tower.setStatus(Objects.nonNull(status) ? status : TowerStatus.ACTIVE); // Use provided status or default to ACTIVE
-        tower.setFrequency(frequency);
+        tower.setStatus(Objects.nonNull(status) ? status : TowerStatus.ACTIVE);
+        tower.setIntervals(intervals);
         tower.setStart_date(start_date);
         tower.setEnd_date(end_date);
-        tower.setWatering_duration(watering_duration);
-
-        // ✅ Handle nested schedules safely
-        if (schedules != null && !schedules.isEmpty()) {
-            final Tower finalTower = tower;
-
-            List<Schedule> scheduleEntities = schedules.stream()
-                    .filter(Objects::nonNull) // skip null ScheduleRO
-                    .map(scheduleRO -> {
-                        Schedule schedule = scheduleRO.toEntity(new Schedule());
-
-                        // safeguard against null start_time
-                        if (schedule.getStart_time() == null) {
-                            return null; // skip invalid schedule
-                        }
-
-                        schedule.setTower(finalTower); // link back to tower
-                        return schedule;
-                    })
-                    .filter(Objects::nonNull) // ensure only valid schedules
-                    .collect(Collectors.toList());
-
-            tower.setSchedules(scheduleEntities);
-        }
+        tower.setStart_time(start_time);
+        tower.setEnd_time(end_time);
+        tower.setWatering_duration(Objects.nonNull(watering_duration) ? watering_duration : 15);
 
         return tower;
     }

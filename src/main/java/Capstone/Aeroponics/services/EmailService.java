@@ -14,9 +14,12 @@ public class EmailService {
     
     private final JavaMailSender mailSender;
     
-    @Value("${spring.mail.username}")
+    @Value("${sendgrid.from.email}")
     private String fromEmail;
     
+    @Value("${sendgrid.from.name}")
+    private String fromName;
+
     /**
      * Send OTP email to user
      * @param toEmail the recipient email
@@ -28,7 +31,7 @@ public class EmailService {
         
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
+            message.setFrom(String.format("%s <%s>", fromName, fromEmail));
             message.setTo(toEmail);
             message.setSubject("Aeroponics - Email Verification OTP");
             message.setText(buildOtpEmailBody(otpCode, firstName));
@@ -53,7 +56,7 @@ public class EmailService {
         
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
+            message.setFrom(String.format("%s <%s>", fromName, fromEmail));
             message.setTo(toEmail);
             message.setSubject("Aeroponics - Change Password OTP");
             message.setText(buildChangePasswordOtpEmailBody(otpCode, firstName));
@@ -77,7 +80,7 @@ public class EmailService {
         return String.format("""
             Dear %s,
             
-            Thank you for registering with Aeroponics!
+            Thank you for registering with %s!
             
             Your email verification OTP is: %s
             
@@ -86,8 +89,8 @@ public class EmailService {
             If you did not request this verification, please ignore this email.
             
             Best regards,
-            Aeroponics Team
-            """, firstName, otpCode);
+            %s Team
+            """, firstName, fromName, otpCode, fromName);
     }
     
     /**
@@ -100,7 +103,7 @@ public class EmailService {
         return String.format("""
             Dear %s,
             
-            You have requested to change your password for your Aeroponics account.
+            You have requested to change your password for your %s account.
             
             Your password change OTP is: %s
             
@@ -111,7 +114,7 @@ public class EmailService {
             For security reasons, please do not share this OTP with anyone.
             
             Best regards,
-            Aeroponics Team
-            """, firstName, otpCode);
+            %s Team
+            """, firstName, fromName, otpCode, fromName);
     }
 }

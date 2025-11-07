@@ -2,8 +2,10 @@ package Capstone.Aeroponics.controllers;
 
 import Capstone.Aeroponics.models.request.DeviceRO;
 import Capstone.Aeroponics.services.DeviceService;
+import Capstone.Aeroponics.services.UserService;
 import Capstone.Aeroponics.utils.MessageUtils;
 import Capstone.Aeroponics.utils.ResponseUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class DeviceController {
 
     private final DeviceService deviceService;
+    private final UserService userService;
 
     // NodeMCU sends JSON with MAC + IP to backend
     @PostMapping("/register")
@@ -41,14 +44,15 @@ public class DeviceController {
         );
     }
 
-    // Get all free devices
+    // Get all free devices - only devices assigned to the logged in user will be returned
     @GetMapping("/free/all")
-    public ResponseEntity<?> getAllFreeDevices() {
+    public ResponseEntity<?> getAllFreeDevices(HttpServletRequest request) {
+        var user = userService.getUserProfile(request);
         return ResponseEntity.ok(
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
                 MessageUtils.retrieveSuccessMessage(DeviceService.DEVICES),
-                deviceService.getAllFreeDevices()
+                deviceService.getAllFreeDevices(user)
             )
         );
     }

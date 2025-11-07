@@ -13,8 +13,6 @@ import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -104,19 +102,18 @@ public class DeviceService {
         }
     }
 
-    // Get all free devices assigned to the current user (returns list of DTOs for controller)
-    public List<DeviceDTO> getAllFreeDevices() {
+    // Get all free devices assigned to the specified user (returns list of DTOs for controller)
+    public List<DeviceDTO> getAllFreeDevices(User user) {
         try {
-            // Get the logged-in user's email from JWT
-            String email = SecurityContextHolder.getContext().getAuthentication().getName();
-            
-            // Fetch the actual User entity
-            User currentUser = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-            
-            // Find all free devices assigned to the current user
-            List<Device> devices = deviceRepository.findAllByStatusAndUser(DeviceStatus.FREE, currentUser);
-            log.info("Found " + devices.size() + " free " + DEVICES + " for user: " + email);
+            if (user == null) {
+                log.info("No user provided - returning empty free " + DEVICES);
+                return List.of();
+            }
+
+            // Find all free devices assigned to the user
+            List<Device> devices = deviceRepository.findAllByStatusAndUser(DeviceStatus.FREE, user);
+            log.info("Found " + devices.size() + " free " + DEVICES + " for user: " + user.getEmail());
+
             return devices.stream()
                     .map(DeviceDTO::new)
                     .toList();

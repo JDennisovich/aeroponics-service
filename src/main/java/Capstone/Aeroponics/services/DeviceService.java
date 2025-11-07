@@ -8,10 +8,13 @@ import Capstone.Aeroponics.models.enums.DeviceStatus;
 import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.repositories.DeviceRepository;
 import Capstone.Aeroponics.repositories.TowerRepository;
+import Capstone.Aeroponics.repositories.UserRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +28,7 @@ public class DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final TowerRepository towerRepository;
+    private final UserRepository userRepository;
 
     // Register device as FREE (NodeMCU boot-up) - upsert logic
     public DeviceDTO registerDevice(String mac_address, User user_id) {
@@ -100,11 +104,19 @@ public class DeviceService {
         }
     }
 
-    // Get all free devices (returns list of DTOs for controller)
+    // Get all free devices assigned to the current user (returns list of DTOs for controller)
     public List<DeviceDTO> getAllFreeDevices() {
         try {
-            List<Device> devices = deviceRepository.findAllByStatus(DeviceStatus.FREE);
-            log.info("Found " + devices.size() + " free " + DEVICES);
+            // Get the logged-in user's email from JWT
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            
+            // Fetch the actual User entity
+            User currentUser = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            
+            // Find all free devices assigned to the current user
+            List<Device> devices = deviceRepository.findAllByStatusAndUser(DeviceStatus.FREE, currentUser);
+            log.info("Found " + devices.size() + " free " + DEVICES + " for user: " + email);
             return devices.stream()
                     .map(DeviceDTO::new)
                     .toList();

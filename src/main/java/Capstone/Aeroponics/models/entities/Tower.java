@@ -1,7 +1,6 @@
 package Capstone.Aeroponics.models.entities;
 
 import Capstone.Aeroponics.models.enums.TowerStatus;
-import Capstone.Aeroponics.models.enums.WaterLevel;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

@@ -8,7 +8,6 @@ import Capstone.Aeroponics.models.enums.DeviceStatus;
 import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.repositories.DeviceRepository;
 import Capstone.Aeroponics.repositories.TowerRepository;
-import Capstone.Aeroponics.repositories.UserRepository;
 import Capstone.Aeroponics.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,6 @@ public class DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final TowerRepository towerRepository;
-    private final UserRepository userRepository;
 
     // Register device as FREE (NodeMCU boot-up) - upsert logic
     public DeviceDTO registerDevice(String mac_address, User user_id) {
@@ -102,18 +100,16 @@ public class DeviceService {
         }
     }
 
-    // Get all free devices assigned to the specified user (returns list of DTOs for controller)
+    // Get all free devices assigned to the current user (returns list of DTOs for controller)
     public List<DeviceDTO> getAllFreeDevices(User user) {
         try {
             if (user == null) {
-                log.info("No user provided - returning empty free " + DEVICES);
-                return List.of();
+                throw new ServiceException("User not found");
             }
-
-            // Find all free devices assigned to the user
+            
+            // Find all free devices assigned to the current user
             List<Device> devices = deviceRepository.findAllByStatusAndUser(DeviceStatus.FREE, user);
             log.info("Found " + devices.size() + " free " + DEVICES + " for user: " + user.getEmail());
-
             return devices.stream()
                     .map(DeviceDTO::new)
                     .toList();

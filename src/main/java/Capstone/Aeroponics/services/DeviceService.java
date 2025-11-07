@@ -3,6 +3,7 @@ package Capstone.Aeroponics.services;
 import Capstone.Aeroponics.models.DTO.device.DeviceDTO;
 import Capstone.Aeroponics.models.entities.Device;
 import Capstone.Aeroponics.models.entities.Tower;
+import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.enums.DeviceStatus;
 import Capstone.Aeroponics.models.enums.TowerStatus;
 import Capstone.Aeroponics.repositories.DeviceRepository;
@@ -26,14 +27,14 @@ public class DeviceService {
     private final TowerRepository towerRepository;
 
     // Register device as FREE (NodeMCU boot-up) - upsert logic
-    public DeviceDTO registerDevice(String mac_address, String ip_address) {
+    public DeviceDTO registerDevice(String mac_address, User user_id) {
         try {
             Device existingDevice = deviceRepository.findByMacAddress(mac_address).orElse(null);
             
             Device device = Device.builder()
                     .macAddress(mac_address)
-                    .ipAddress(ip_address)
                     .status(DeviceStatus.FREE)
+                    .user(user_id)
                     .build();
             
             if (existingDevice != null) {

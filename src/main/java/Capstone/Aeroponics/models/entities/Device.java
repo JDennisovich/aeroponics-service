@@ -19,9 +19,6 @@ public class Device {
     @Column(name = "mac_address", unique = true, nullable = false)
     private String macAddress;
 
-    @Column(name = "ip_address")
-    private String ipAddress;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private DeviceStatus status;
@@ -30,4 +27,8 @@ public class Device {
     @JoinColumn(name = "tower_id", nullable = true)
     @ToString.Exclude
     private Tower tower;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    private User user;
 }

@@ -18,14 +18,12 @@ public class DeviceDTO {
 
     private Long id;
     private String macAddress;
-    private String ipAddress;
     private DeviceStatus status;
     private TowerDTO tower;
 
     public DeviceDTO(Device device) {
         this.id = device.getId();
         this.macAddress = device.getMacAddress();
-        this.ipAddress = device.getIpAddress();
         this.status = device.getStatus();
         
         if (device.getTower() != null) {

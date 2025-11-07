@@ -1,6 +1,7 @@
 package Capstone.Aeroponics.models.request;
 
 import Capstone.Aeroponics.models.entities.Device;
+import Capstone.Aeroponics.models.entities.User;
 import Capstone.Aeroponics.models.enums.DeviceStatus;
 import jakarta.validation.constraints.NotBlank;
 
@@ -11,14 +12,15 @@ public record DeviceRO(
         @NotBlank(message = "MAC address is mandatory") String mac_address,
         String ip_address,
         DeviceStatus status,
-        Long tower_id
+        Long tower_id,
+        User user_id
 ) {
     public Device toEntity(Device device) {
         if (Objects.isNull(device)) {
             device = new Device();
         }
         device.setMacAddress(mac_address);
-        device.setIpAddress(ip_address);
+        device.setUser(user_id);
         if (status != null) {
             device.setStatus(status);
         } else {

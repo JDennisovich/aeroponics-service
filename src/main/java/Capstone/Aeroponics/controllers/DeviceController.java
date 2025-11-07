@@ -24,7 +24,7 @@ public class DeviceController {
             ResponseUtils.buildSuccessResponse(
                 HttpStatus.OK,
                 MessageUtils.saveSuccessMessage(deviceService.DEVICE),
-                deviceService.registerDevice(request.mac_address(), request.ip_address())
+                deviceService.registerDevice(request.mac_address(), request.user_id())
             )
         );
     }

@@ -80,7 +80,7 @@ public class EmailService {
         return String.format("""
             Dear %s,
             
-            Thank you for registering with %s!
+            Thank you for registering with UrbanFarm!
             
             Your email verification OTP is: %s
             
@@ -89,8 +89,8 @@ public class EmailService {
             If you did not request this verification, please ignore this email.
             
             Best regards,
-            %s Team
-            """, firstName, fromName, otpCode, fromName);
+            UrbanFarm Team
+            """, firstName, otpCode);
     }
     
     /**
